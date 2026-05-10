@@ -113,33 +113,42 @@ async function extractWithCheerio(url: string, scanMode: string) {
 
 async function extractWithPuppeteer(url: string, scanMode: string) {
   const puppeteer = await import('puppeteer-core');
+  const chromium = await import('@sparticuz/chromium-min');
   const fs = await import('fs');
   
-  const chromePaths = [
-    process.env.CHROME_PATH,
-    "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
-    "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
-    "/usr/bin/google-chrome",
-    "/usr/bin/chromium-browser",
-  ].filter(Boolean) as string[];
-
+  const isVercel = process.env.VERCEL || process.env.NODE_ENV === 'production';
   let executablePath = '';
-  for (const p of chromePaths) {
-    if (fs.existsSync(p)) { executablePath = p; break; }
+
+  if (isVercel) {
+    executablePath = await chromium.default.executablePath();
+  } else {
+    const chromePaths = [
+      process.env.CHROME_PATH,
+      "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+      "/usr/bin/google-chrome",
+      "/usr/bin/chromium-browser",
+    ].filter(Boolean) as string[];
+
+    for (const p of chromePaths) {
+      if (fs.existsSync(p)) { executablePath = p; break; }
+    }
   }
-  if (!executablePath) throw new Error("Chrome not found");
+
+  if (!executablePath) throw new Error("Chrome/Chromium not found");
 
   const browser = await puppeteer.default.launch({
     executablePath,
-    headless: true,
-    args: [
+    headless: isVercel ? chromium.default.headless : true,
+    args: isVercel ? chromium.default.args : [
       "--no-sandbox",
       "--disable-setuid-sandbox", 
       "--disable-dev-shm-usage",
       "--disable-gpu",
-      "--disable-blink-features=AutomationControlled", // Hide automation
+      "--disable-blink-features=AutomationControlled",
       "--window-size=1920,1080",
     ],
+    defaultViewport: isVercel ? chromium.default.defaultViewport : { width: 1920, height: 1080 },
   });
 
   const imageUrls = new Set<string>();

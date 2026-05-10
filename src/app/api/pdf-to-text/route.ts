@@ -4,7 +4,6 @@ export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
   try {
-    const pdf = require("pdf-parse");
     const formData = await req.formData();
     const file = formData.get("file") as File;
 
@@ -12,17 +11,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    if (file.type !== "application/pdf") {
-      return NextResponse.json({ error: "File must be a PDF" }, { status: 400 });
-    }
-
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    const data = await pdf(buffer);
+    // Using dynamic import and any casting for pdf-parse to bypass build errors
+    const pdf = (await import("pdf-parse")).default;
+    const data = await (pdf as any)(buffer);
 
     return NextResponse.json({ text: data.text });
-  } catch (error) {
+  } catch (error: any) {
     console.error("PDF parsing error:", error);
     return NextResponse.json({ error: "Failed to extract text from PDF" }, { status: 500 });
   }

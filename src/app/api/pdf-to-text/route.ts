@@ -15,8 +15,9 @@ export async function POST(req: NextRequest) {
     const buffer = Buffer.from(arrayBuffer);
 
     // Using dynamic import and any casting for pdf-parse to bypass build errors
-    const pdf = (await import("pdf-parse")).default;
-    const data = await (pdf as any)(buffer);
+    const pdfModule = (await import("pdf-parse")) as any;
+    const pdf = pdfModule.default || pdfModule;
+    const data = await pdf(buffer);
 
     return NextResponse.json({ text: data.text });
   } catch (error: any) {

@@ -1,36 +1,80 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# UnifiedTools Pro 🚀
 
-## Getting Started
+The ultimate, high-performance SEO and Developer toolkit designed for modern web workflows. Consolidated from multiple specialized tools into a single, premium platform built with **Next.js 15**, **TypeScript**, and **Tailwind CSS**.
 
-First, run the development server:
+![UnifiedTools Pro](https://raw.githubusercontent.com/jahidulislamseo/UnifiedTools-Pro/main/public/next.svg)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## ✨ Features
+
+### 🖼️ Image Extractor Pro
+- **Cloudflare Bypass:** Uses a hybrid Puppeteer-Cheerio engine to bypass advanced bot protection.
+- **Lazy Load Support:** Automatically scrolls and triggers dynamic asset loading.
+- **20+ Formats:** Supports JPG, PNG, WebP, SVG, AVIF, and more.
+- **Bulk Export:** Download selected images in a single ZIP archive.
+
+### 📍 GeoImage Tagger (SEO)
+- **EXIF Metadata:** Inject GPS coordinates and business metadata directly into images.
+- **Local SEO Boost:** Optimized for ranking in Google Maps and local search results.
+- **Interactive Map:** Choose coordinates visually using an integrated map component.
+
+### 🔄 Image Converter
+- **Format Conversion:** Instantly convert between WebP, PNG, JPG, and AVIF.
+- **Social Media Presets:** Auto-resize and optimize for Instagram, Facebook, and Twitter.
+- **Privacy First:** All processing happens on the server/browser; your data is never stored.
+
+### 📄 PDF & Utility Tools
+- **PDF to Text:** High-accuracy extraction of text from PDF documents.
+- **PDF Merger:** Combine multiple PDF files into one professional document.
+- **Smart Calculators:** Advanced Age and Loan EMI calculators with real-time results.
+
+## 🛠️ Tech Stack
+
+- **Frontend:** Next.js 15 (App Router), React 19, Framer Motion (Animations)
+- **Styling:** Tailwind CSS, Lucide Icons
+- **Backend:** Node.js (Next.js API Routes)
+- **Libraries:** Puppeteer-Core (Scraping), Sharp (Image Processing), JSZip (Bulk Download), Piexifjs (EXIF Metadata)
+
+## 🚀 Getting Started
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/jahidulislamseo/UnifiedTools-Pro.git
+   cd UnifiedTools-Pro
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+3. **Set up Environment Variables:**
+   Create a `.env` file in the root directory and add:
+   ```env
+   GEMINI_API_KEY=your_api_key_here
+   CHROME_PATH=C:\Program Files\Google\Chrome\Application\chrome.exe
+   ```
+
+4. **Run the development server:**
+   ```bash
+   npm run dev
+   ```
+
+5. **Open in Browser:**
+   Go to [http://localhost:3000](http://localhost:3000)
+
+## 📁 Project Structure
+
+```text
+src/
+├── app/             # App Router pages and API routes
+├── components/      # Reusable UI components (Navbar, Footer, Map)
+├── types/           # TypeScript definitions
+└── public/          # Static assets
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 📜 License
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Distributed under the MIT License. See `LICENSE` for more information.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+**Maintained by [Jahidul Islam](https://github.com/jahidulislamseo)**

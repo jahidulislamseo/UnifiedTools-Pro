@@ -106,7 +106,7 @@ async function extractWithPuppeteer(url: string, scanMode: string) {
     const imgs = await page.evaluate(() => {
       return Array.from(document.querySelectorAll('img')).map(i => i.src);
     });
-    imgs.forEach(s => imageUrls.add(s));
+    imgs.forEach((s: string) => imageUrls.add(s));
   } finally {
     await browser.close();
   }

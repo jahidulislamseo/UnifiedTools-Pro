@@ -30,15 +30,15 @@ export async function POST(req: NextRequest) {
           force: true 
         })
         .toBuffer();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Sharp conversion error:", err);
-      return NextResponse.json({ error: "Image conversion failed: " + err.message }, { status: 500 });
+      return NextResponse.json({ error: "Image conversion failed: " + (err instanceof Error ? err.message : String(err)) }, { status: 500 });
     }
 
     const base64Str = jpegBuffer.toString("binary");
 
     // 2. Prepare EXIF/GPS Data
-    const gpsIfd: any = {};
+    const gpsIfd: Record<number, unknown> = {};
     const decimalToDMS = (deg: number) => {
       const d = Math.floor(Math.abs(deg));
       const m = Math.floor((Math.abs(deg) - d) * 60);
@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
     gpsIfd[piexif.GPSIFD.GPSLongitudeRef] = lng >= 0 ? "E" : "W";
     gpsIfd[piexif.GPSIFD.GPSLongitude] = decimalToDMS(lng);
 
-    const zerothIfd: any = {};
+    const zerothIfd: Record<number, unknown> = {};
     const encodeXP = (str: string) => {
       // Proper UTF-16LE encoding for Windows XP properties
       const bytes = [];
@@ -90,7 +90,7 @@ export async function POST(req: NextRequest) {
       .replace(/-+/g, "-")
       .replace(/^-|-$/g, "") + ".jpg";
 
-    return new NextResponse(finalBuffer as any, {
+    return new NextResponse(finalBuffer, {
       status: 200,
       headers: {
         "Content-Type": "image/jpeg",
@@ -99,8 +99,8 @@ export async function POST(req: NextRequest) {
       },
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Final Geo-Tagging Catch:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }
 }

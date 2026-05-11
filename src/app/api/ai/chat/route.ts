@@ -51,14 +51,14 @@ export async function POST(req: NextRequest) {
         }
         
         lastError = result.error?.message || JSON.stringify(result) || `Status ${response.status}`;
-      } catch (err: any) {
-        lastError = err.message;
+      } catch (err: unknown) {
+        lastError = err instanceof Error ? err.message : String(err);
       }
     }
 
     return NextResponse.json({ error: "AI Error", message: lastError }, { status: 500 });
 
-  } catch (error: any) {
-    return NextResponse.json({ error: "Server Error", message: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    return NextResponse.json({ error: "Server Error", message: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }
 }

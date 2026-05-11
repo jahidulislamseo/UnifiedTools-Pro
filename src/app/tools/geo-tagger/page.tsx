@@ -75,18 +75,22 @@ export default function GeoTagger() {
 
   useEffect(() => {
     if (selectedIndex !== null && images[selectedIndex]) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setImages(prev => {
         const next = [...prev];
         next[selectedIndex] = { ...next[selectedIndex], lat: position[0], lng: position[1] };
         return next;
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [position, selectedIndex]);
 
   useEffect(() => {
     if (selectedIndex !== null && images[selectedIndex]) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPosition([images[selectedIndex].lat, images[selectedIndex].lng]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedIndex]);
 
   // Load images from Image Converter bridge
@@ -95,7 +99,7 @@ export default function GeoTagger() {
     if (pending) {
       try {
         const parsed = JSON.parse(pending);
-        const newImages: ImageFile[] = parsed.map((img: any) => {
+        const newImages: ImageFile[] = parsed.map((img: { data: string; name: string }) => {
           // Convert Data URL back to Blob then File
           const byteString = atob(img.data.split(',')[1]);
           const mimeString = img.data.split(',')[0].split(':')[1].split(';')[0];
@@ -120,6 +124,7 @@ export default function GeoTagger() {
           };
         });
 
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setImages(prev => [...prev, ...newImages]);
         if (selectedIndex === null) setSelectedIndex(0);
         localStorage.removeItem('pending_geotag_images');
@@ -157,7 +162,7 @@ export default function GeoTagger() {
       }
       const blob = await response.blob();
       
-      let title = img.title;
+      const title = img.title;
       const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
       let baseName = title;
       if (!baseName || uuidRegex.test(baseName)) {
@@ -178,8 +183,8 @@ export default function GeoTagger() {
         document.body.removeChild(a);
       };
       reader.readAsDataURL(blob);
-    } catch (err: any) {
-      alert("Error: " + err.message);
+    } catch (err: unknown) {
+      alert("Error: " + (err instanceof Error ? err.message : String(err)));
     }
   };
 

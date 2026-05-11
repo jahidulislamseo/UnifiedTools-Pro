@@ -234,7 +234,7 @@ export default function PricingPage() {
               <h3 className="font-black text-slate-900 mb-1">Need a custom plan?</h3>
               <p className="text-slate-500 text-sm leading-relaxed">
                 Need more extractions per month or custom API requirements? 
-                Contact us and we'll build a plan that fits your needs.
+                Contact us and we&apos;ll build a plan that fits your needs.
               </p>
               <a href="mailto:hello@unifiedtools.pro"
                 className="inline-flex items-center gap-2 mt-3 text-blue-600 font-black text-sm hover:text-blue-700 transition-colors">

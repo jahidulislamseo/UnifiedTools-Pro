@@ -65,8 +65,8 @@ export default function ChatAssistant({ onProfileExtracted, selectedModel, setSe
       onProfileExtracted(data.extractedInfo || userMsg);
       if (data.reply.includes("[START_ANALYSIS]")) onCommand("analyze");
       if (data.reply.includes("[START_EXPORT]")) onCommand("export");
-    } catch (err: any) {
-      setMessages(prev => [...prev, { role: 'assistant', content: `Error: ${err.message}` }]);
+    } catch (err: unknown) {
+      setMessages(prev => [...prev, { role: 'assistant', content: `Error: ${err instanceof Error ? err.message : String(err)}` }]);
     } finally {
       setIsLoading(false);
     }

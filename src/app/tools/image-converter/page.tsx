@@ -3,7 +3,7 @@
 import { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { motion, AnimatePresence } from "framer-motion";
-import { UploadCloud, Download, Loader2, X, Search, Globe, Package, Grid, List, CheckSquare, Square, ArrowUpDown, MapPin, ArrowRight, Sliders, Layers, FileImage } from "lucide-react";
+import { UploadCloud, Download, Loader2, X, Search, Globe, Package, Grid, List, CheckSquare, Square, ArrowUpDown, MapPin, ArrowRight, Sliders, FileImage } from "lucide-react";
 import JSZip from "jszip";
 import { useRouter } from "next/navigation";
 
@@ -87,13 +87,13 @@ export default function ImageConverter() {
           const file = new File([blob], fileName, { type: blob.type });
           const preview = proxyUrl;
           extracted.push({ id: Date.now() + i, file, preview, status: 'idle', selected: false });
-        } catch (e) {}
+        } catch { /* ignore error */ }
         setExtractionProgress(Math.round(((i + 1) / total) * 100));
       }
       setImages(prev => [...prev, ...extracted]);
       setExtractUrl("");
-    } catch (err: any) {
-      alert("Extraction failed: " + err.message);
+    } catch (err: unknown) {
+      alert("Extraction failed: " + (err instanceof Error ? err.message : String(err)));
     } finally {
       setIsExtracting(false);
       setExtractionProgress(0);
@@ -171,7 +171,7 @@ export default function ImageConverter() {
 
   const downloadAllZip = async () => {
     const zip = new JSZip();
-    images.forEach((img, i) => {
+    images.forEach((img) => {
       if (img.result) zip.file(`${img.file.name.split('.')[0]}.${targetFormat}`, img.result);
     });
     const content = await zip.generateAsync({ type: "blob" });

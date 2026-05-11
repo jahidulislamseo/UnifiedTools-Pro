@@ -54,8 +54,8 @@ export default function PDFMerger() {
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       setMergedUrl(url);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setIsMerging(false);
     }

@@ -77,7 +77,7 @@ async function extractWithPuppeteer(url: string, scanMode: string) {
   let executablePath = '';
 
   if (isVercel) {
-    executablePath = await (chromium as any).default.executablePath();
+    executablePath = await (chromium as unknown as { default: { executablePath: () => Promise<string> } }).default.executablePath();
   } else {
     const chromePaths = [
       process.env.CHROME_PATH,
@@ -92,11 +92,11 @@ async function extractWithPuppeteer(url: string, scanMode: string) {
 
   if (!executablePath) throw new Error("Chromium not found");
 
-  const browser = await (puppeteer as any).default.launch({
+  const browser = await (puppeteer as unknown as { default: { launch: (opts: unknown) => Promise<any> } }).default.launch({
     executablePath,
-    headless: isVercel ? (chromium as any).default.headless : true,
-    args: isVercel ? (chromium as any).default.args : ["--no-sandbox"],
-    defaultViewport: isVercel ? (chromium as any).default.defaultViewport : { width: 1920, height: 1080 },
+    headless: isVercel ? (chromium as unknown as { default: { headless: boolean } }).default.headless : true,
+    args: isVercel ? (chromium as unknown as { default: { args: string[] } }).default.args : ["--no-sandbox"],
+    defaultViewport: isVercel ? (chromium as unknown as { default: { defaultViewport: unknown } }).default.defaultViewport : { width: 1920, height: 1080 },
   });
 
   const imageUrls = new Set<string>();
@@ -128,7 +128,7 @@ export async function POST(req: NextRequest) {
 
     const final = [...new Set(result.images)].filter(u => u.length < 600);
     return NextResponse.json({ images: final, count: final.length, pagesScanned: result.pagesScanned });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }
 }

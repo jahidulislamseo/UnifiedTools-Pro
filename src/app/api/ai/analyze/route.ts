@@ -71,8 +71,8 @@ export async function POST(req: NextRequest) {
           if (jsonMatch) return NextResponse.json(JSON.parse(jsonMatch[0]));
         }
         lastError = result.error?.message || JSON.stringify(result);
-      } catch (e: any) {
-        lastError = e.message;
+      } catch (e: unknown) {
+        lastError = e instanceof Error ? e.message : String(e);
       }
     }
 
@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
       message: "Multiple vision models failed. Last error: " + lastError + ". PLEASE CHECK your OpenRouter Privacy settings and enable free models." 
     }, { status: 500 });
 
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }
 }

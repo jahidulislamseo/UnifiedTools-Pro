@@ -83,7 +83,7 @@ const features = [
 ];
 
 const testimonials = [
-  { text: "This tool saved me hours of work! Extracted 90 images from my client's site in seconds.", name: "Sarah M.", role: "SEO Consultant" },
+  { text: "This tool saved me hours of work! Extracted 90 images from my client&apos;s site in seconds.", name: "Sarah M.", role: "SEO Consultant" },
   { text: "The GeoImage Tagger completely transformed my local SEO rankings within weeks.", name: "James K.", role: "Digital Marketer" },
   { text: "Finally a tool that works! Clean UI and incredibly fast image processing.", name: "Priya S.", role: "Web Developer" },
 ];
@@ -248,7 +248,7 @@ export default function Home() {
               <div className="flex gap-1 mb-4">
                 {[1,2,3,4,5].map(j => <Star key={j} className="h-4 w-4 text-yellow-400 fill-yellow-400" />)}
               </div>
-              <p className="text-slate-600 text-sm leading-relaxed mb-6 italic">"{t.text}"</p>
+              <p className="text-slate-600 text-sm leading-relaxed mb-6 italic">&quot;{t.text}&quot;</p>
               <div>
                 <p className="font-black text-slate-900 text-sm">{t.name}</p>
                 <p className="text-slate-400 text-xs">{t.role}</p>
@@ -264,7 +264,7 @@ export default function Home() {
           <div className="text-center mb-16">
             <h2 className="text-4xl font-black text-slate-900 tracking-tight mb-4">Frequently Asked Questions</h2>
             <p className="text-slate-400 text-lg">
-              If you can’t find what you’re looking for, write us a message and we'll get back to you.
+              If you can&apos;t find what you&apos;re looking for, write us a message and we&apos;ll get back to you.
             </p>
           </div>
 
@@ -273,7 +273,7 @@ export default function Home() {
               <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
                 <h3 className="font-black text-slate-900 mb-3">What is UnifiedTools Pro?</h3>
                 <p className="text-slate-500 text-sm leading-relaxed">
-                  UnifiedTools Pro is an easy to use toolkit that allows you to extract, view and download images from any public website. Simply paste the URL and click "Extract" to start. After a few seconds, you'll see the images found on the website.
+                  UnifiedTools Pro is an easy to use toolkit that allows you to extract, view and download images from any public website. Simply paste the URL and click &quot;Extract&quot; to start. After a few seconds, you&apos;ll see the images found on the website.
                 </p>
               </div>
 
@@ -317,7 +317,7 @@ export default function Home() {
               <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
                 <h3 className="font-black text-slate-900 mb-3">Can I download multiple images at once?</h3>
                 <p className="text-slate-500 text-sm leading-relaxed">
-                  Of course! Select the images you want and use the "Download Selected" button to get them all in a ZIP file. Note that some images might be protected and won't be included if they can't be fetched.
+                  Of course! Select the images you want and use the &quot;Download Selected&quot; button to get them all in a ZIP file. Note that some images might be protected and won&apos;t be included if they can&apos;t be fetched.
                 </p>
               </div>
 
@@ -350,9 +350,9 @@ export default function Home() {
               </div>
 
               <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
-                <h3 className="font-black text-slate-900 mb-3">What does "Image preview not available" mean?</h3>
+                <h3 className="font-black text-slate-900 mb-3">What does &quot;Image preview not available&quot; mean?</h3>
                 <p className="text-slate-500 text-sm leading-relaxed">
-                  This usually means the webserver where the image is stored doesn't allow it to be displayed on other sites (CORS). You can often still download it or open it in a new tab to see it.
+                  This usually means the webserver where the image is stored doesn&apos;t allow it to be displayed on other sites (CORS). You can often still download it or open it in a new tab to see it.
                 </p>
               </div>
             </div>

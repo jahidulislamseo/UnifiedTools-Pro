@@ -30,8 +30,8 @@ export async function GET(req: NextRequest) {
         "Cache-Control": "public, max-age=31536000, immutable"
       }
     });
-  } catch (error: any) {
-    console.error("Proxy Error:", error.message);
+  } catch (error: unknown) {
+    console.error("Proxy Error:", error instanceof Error ? error.message : String(error));
     // Fallback: Redirect to original image if proxy fails (might hit CORS but better than nothing)
     return NextResponse.redirect(imageUrl);
   }

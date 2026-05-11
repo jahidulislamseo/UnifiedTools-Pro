@@ -24,6 +24,7 @@ export default function MapComponent({ position, setPosition, onFileDrop }: MapP
     if (!containerRef.current || mapRef.current) return;
 
     // Fix icons
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     delete (L.Icon.Default.prototype as any)._getIconUrl;
     L.Icon.Default.mergeOptions({
       iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
@@ -37,7 +38,7 @@ export default function MapComponent({ position, setPosition, onFileDrop }: MapP
       zoomControl: false,
     });
 
-    const streets = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
     mapRef.current = map;
 
     // Click to set position
@@ -105,7 +106,7 @@ export default function MapComponent({ position, setPosition, onFileDrop }: MapP
       if (results && results[0]) {
         setPosition([parseFloat(results[0].lat), parseFloat(results[0].lon)]);
       }
-    } catch (e) {}
+    } catch { /* ignore error */ }
   };
 
   const locateMe = () => {

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Globe, MapPin, FileText, Calculator, Zap, Code2, Share2, Mail } from "lucide-react";
+import { Zap, Code2, Share2, Mail } from "lucide-react";
 
 const footerLinks = {
   "Image Tools": [

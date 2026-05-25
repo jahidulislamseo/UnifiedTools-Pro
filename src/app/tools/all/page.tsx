@@ -1,12 +1,15 @@
 "use client";
 
+import { useState, type ChangeEvent } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   MapPin, Calculator, Calendar, FileText,
   Key, Globe, Layers, Zap, Code, BarChart3,
   FileSearch, Crop, RefreshCw, LinkIcon, Hash,
   Binary, QrCode, Shield, Search, Palette,
-  Bot, SpellCheck, ScanSearch, ShieldCheck
+  Bot, SpellCheck, ScanSearch, ShieldCheck, Tag,
+  Lock
 } from "lucide-react";
 import Link from "next/link";
 
@@ -172,6 +175,26 @@ const allTools = [
     ],
   },
   {
+    category: "🛡️ Security Tools",
+    items: [
+      {
+        title: "Website Security Toolkit",
+        description: "Run an overall security review with SSL, headers, malware, backups, and admin protections.",
+        icon: <Shield className="h-8 w-8 text-rose-500" />,
+        path: "/tools/security",
+        status: "new",
+        badge: "New",
+      },
+      {
+        title: "SSL Certificate Checker",
+        description: "Inspect HTTPS certificate validity, expiration, issuer, and SAN details.",
+        icon: <Lock className="h-8 w-8 text-sky-400" />,
+        path: "/tools/ssl-checker",
+        status: "live",
+      },
+    ],
+  },
+  {
     category: "🤖 AI Writing Tools",
     items: [
       {
@@ -215,6 +238,53 @@ const allTools = [
       },
     ],
   },
+  {
+    category: "🔍 SEO Tools",
+    items: [
+      {
+        title: "Meta Tag Generator",
+        description: "Generate SEO meta tags, Open Graph, and Twitter cards instantly.",
+        icon: <Tag className="h-8 w-8 text-violet-500" />,
+        path: "/tools/seo/meta-tag-generator",
+        status: "live",
+      },
+      {
+        title: "Keyword Density Checker",
+        description: "Analyze keyword usage and density to avoid stuffing and improve optimization.",
+        icon: <BarChart3 className="h-8 w-8 text-blue-500" />,
+        path: "/tools/seo/keyword-density",
+        status: "live",
+      },
+      {
+        title: "SERP Snippet Preview",
+        description: "Preview how your page looks in Google Search on desktop and mobile.",
+        icon: <Search className="h-8 w-8 text-cyan-500" />,
+        path: "/tools/seo/serp-preview",
+        status: "live",
+      },
+      {
+        title: "Schema Markup Generator",
+        description: "Create JSON-LD structured data for articles, products, FAQs, and local businesses.",
+        icon: <Code className="h-8 w-8 text-emerald-500" />,
+        path: "/tools/seo/schema-generator",
+        status: "live",
+      },
+      {
+        title: "Search Console Analyzer",
+        description: "Parse Search Console query exports to view top queries, CTR, and average position.",
+        icon: <Search className="h-8 w-8 text-orange-500" />,
+        path: "/tools/seo/search-console",
+        status: "live",
+      },
+      {
+        title: "SEO Audit Checker",
+        description: "Audit page source for title, description, headings, image alts, and schema markup.",
+        icon: <ShieldCheck className="h-8 w-8 text-teal-500" />,
+        path: "/tools/seo/seo-audit",
+        status: "live",
+      },
+    ],
+  },
 ];
 
 const statusStyles: Record<string, string> = {
@@ -223,6 +293,17 @@ const statusStyles: Record<string, string> = {
 };
 
 export default function AllToolsDashboard() {
+  const router = useRouter();
+  const [selectedToolPath, setSelectedToolPath] = useState("");
+
+  const handleToolSelect = (event: ChangeEvent<HTMLSelectElement>) => {
+    const path = event.target.value;
+    setSelectedToolPath(path);
+    if (path) {
+      router.push(path);
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
       <div className="text-center mb-14">
@@ -232,6 +313,25 @@ export default function AllToolsDashboard() {
         <p className="text-slate-400 text-lg max-w-2xl mx-auto">
           A complete suite of free, professional-grade SEO, image, PDF, and developer tools.
         </p>
+      </div>
+
+      <div className="mb-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+        <label htmlFor="tool-picker" className="text-sm font-semibold text-slate-600">Jump to tool:</label>
+        <select
+          id="tool-picker"
+          value={selectedToolPath}
+          onChange={handleToolSelect}
+          className="min-w-[260px] rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-300 focus:ring-2 focus:ring-sky-100"
+        >
+          <option value="">Browse all tools</option>
+          {allTools.map((section) => (
+            <optgroup key={section.category} label={section.category}>
+              {section.items.map((tool) => (
+                <option key={tool.path} value={tool.path}>{tool.title}</option>
+              ))}
+            </optgroup>
+          ))}
+        </select>
       </div>
 
       <div className="space-y-12">

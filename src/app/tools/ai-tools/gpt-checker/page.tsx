@@ -19,7 +19,7 @@ function ScoreDial({ score }: { score: number }) {
   return (
     <div className="flex flex-col items-center">
       <div className="relative w-40 h-40">
-        <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
+        <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90 relative z-0">
           <circle cx="50" cy="50" r="40" fill="none" stroke="#e2e8f0" strokeWidth="10" />
           <circle
             cx="50" cy="50" r="40" fill="none"
@@ -30,8 +30,8 @@ function ScoreDial({ score }: { score: number }) {
             className="transition-all duration-1000"
           />
         </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-3xl font-black text-slate-900 dark:text-white">{score}%</span>
+        <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
+          <span className="text-3xl font-black text-slate-900">{score}%</span>
           <span className="text-xs text-slate-500 mt-0.5">AI Probability</span>
         </div>
       </div>

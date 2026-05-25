@@ -50,6 +50,9 @@ The ultimate, high-performance SEO and Developer toolkit designed for modern web
 3. **Set up Environment Variables:**
    Create a `.env` file in the root directory and add:
    ```env
+   OPENROUTER_API_KEY=your_openrouter_key_here
+   # Or use OpenAI as a fallback:
+   # OPENAI_API_KEY=your_openai_key_here
    GEMINI_API_KEY=your_api_key_here
    CHROME_PATH=C:\Program Files\Google\Chrome\Application\chrome.exe
    ```

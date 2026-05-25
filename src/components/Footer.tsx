@@ -3,7 +3,6 @@ import { Globe, MapPin, FileText, Calculator, Zap, Code2, Share2, Mail } from "l
 
 const footerLinks = {
   "Image Tools": [
-    { name: "Image Extractor", href: "/tools/image-converter" },
     { name: "GeoImage Tagger", href: "/tools/geo-tagger" },
     { name: "Image Converter", href: "/tools/image-converter" },
   ],

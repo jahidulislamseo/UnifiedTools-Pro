@@ -18,10 +18,10 @@ interface ChatAssistantProps {
 }
 
 const FREE_MODELS = [
-  { id: "inclusionai/ring-2.6-1t:free", name: "InclusionAI Ring (Verified)" },
-  { id: "meta-llama/llama-3.3-70b-instruct:free", name: "Llama 3.3 70B" },
-  { id: "google/gemini-2.0-flash-exp:free", name: "Gemini 2.0 Flash Exp" },
-  { id: "google/gemini-flash-1.5:free", name: "Gemini 1.5 Flash" },
+  { id: "deepseek/deepseek-v4-flash:free", name: "DeepSeek V4 Flash" },
+  { id: "google/gemma-4-31b-it:free", name: "Gemma 4 31B" },
+  { id: "nvidia/nemotron-3-super-120b-a12b:free", name: "Nemotron-3 Super 120B" },
+  { id: "poolside/laguna-m.1:free", name: "Laguna M.1" },
 ];
 
 export default function ChatAssistant({ onProfileExtracted, selectedModel, setSelectedModel, imageCount, onCommand }: ChatAssistantProps) {

@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import ToolSeoContent from "@/components/ToolSeoContent";
 import { useDropzone } from "react-dropzone";
 import { motion, AnimatePresence } from "framer-motion";
-import { UploadCloud, Download, Loader2, X, Search, Globe, Package, Grid, List, CheckSquare, Square, ArrowUpDown, MapPin, ArrowRight, Sliders, Layers, FileImage } from "lucide-react";
+import { UploadCloud, Download, Loader2, X, Search, Globe, Package, Grid, List, CheckSquare, Square, ArrowUpDown, MapPin, ArrowRight, Sliders, Layers, FileImage, Eye, ChevronLeft, ChevronRight } from "lucide-react";
 import JSZip from "jszip";
 import { useRouter } from "next/navigation";
 
@@ -41,6 +42,38 @@ export default function ImageConverter() {
   const [filterFormat, setFilterFormat] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOrder, setSortOrder] = useState<'none' | 'asc' | 'desc'>('none');
+  const [selectedPreview, setSelectedPreview] = useState<ImageFile | null>(null);
+
+  const getExt = (img: ImageFile) => img.file.name.split('.').pop()?.toUpperCase() || 'UNK';
+
+  let filtered = images.filter(img => {
+    const matchFormat = filterFormat === 'ALL' || getExt(img).includes(filterFormat);
+    const matchSearch = !searchQuery || img.file.name.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchFormat && matchSearch;
+  });
+  if (sortOrder === 'desc') filtered = [...filtered].sort((a, b) => b.file.size - a.file.size);
+  if (sortOrder === 'asc') filtered = [...filtered].sort((a, b) => a.file.size - b.file.size);
+
+  const navigatePreview = (direction: number) => {
+    if (!selectedPreview) return;
+    const currentIndex = filtered.findIndex(img => img.id === selectedPreview.id);
+    let nextIndex = currentIndex + direction;
+    if (nextIndex < 0) nextIndex = filtered.length - 1;
+    if (nextIndex >= filtered.length) nextIndex = 0;
+    setSelectedPreview(filtered[nextIndex]);
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSelectedPreview(null);
+      if (selectedPreview) {
+        if (e.key === 'ArrowLeft') navigatePreview(-1);
+        if (e.key === 'ArrowRight') navigatePreview(1);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedPreview, filtered]);
 
   let idCounter = 0;
 
@@ -76,21 +109,30 @@ export default function ImageConverter() {
       if (data.error) throw new Error(data.error);
 
       const total = Math.min(data.images.length, 50);
-      const extracted: ImageFile[] = [];
+      const imageUrls = data.images.slice(0, total);
 
-      for (let i = 0; i < total; i++) {
-        try {
-          const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(data.images[i])}`;
+      // Parallel processing with controlled concurrency (batches of 5)
+      const batchSize = 5;
+      for (let i = 0; i < imageUrls.length; i += batchSize) {
+        const batch = imageUrls.slice(i, i + batchSize);
+        const results = await Promise.allSettled(batch.map(async (url: string, index: number) => {
+          const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(url)}`;
           const imgRes = await fetch(proxyUrl);
+          if (!imgRes.ok) throw new Error("Fetch failed");
           const blob = await imgRes.blob();
-          const fileName = data.images[i].split('/').pop()?.split('?')[0] || `image-${i}.jpg`;
+          const fileName = url.split('/').pop()?.split('?')[0] || `extracted-${i + index}.jpg`;
           const file = new File([blob], fileName, { type: blob.type });
-          const preview = proxyUrl;
-          extracted.push({ id: Date.now() + i, file, preview, status: 'idle', selected: false });
-        } catch (e) {}
-        setExtractionProgress(Math.round(((i + 1) / total) * 100));
+          return { id: Date.now() + i + index, file, preview: proxyUrl, status: 'idle' as const, selected: false };
+        }));
+
+        const successful = results
+          .filter((r): r is PromiseFulfilledResult<ImageFile> => r.status === 'fulfilled')
+          .map(r => r.value);
+
+        setImages(prev => [...prev, ...successful]);
+        setExtractionProgress(Math.round(((i + batch.length) / total) * 100));
       }
-      setImages(prev => [...prev, ...extracted]);
+
       setExtractUrl("");
     } catch (err: any) {
       alert("Extraction failed: " + err.message);
@@ -103,19 +145,15 @@ export default function ImageConverter() {
   const toggleSelect = (id: number) => setImages(prev => prev.map(img => img.id === id ? { ...img, selected: !img.selected } : img));
   const selectAll = () => setImages(prev => prev.map(img => ({ ...img, selected: true })));
   const deselectAll = () => setImages(prev => prev.map(img => ({ ...img, selected: false })));
-  const removeImage = (id: number) => setImages(prev => prev.filter(img => img.id !== id));
-
-  const getExt = (img: ImageFile) => img.file.name.split('.').pop()?.toUpperCase() || 'UNK';
-  const formatSize = (bytes: number) => bytes < 1024 ? `${bytes} B` : bytes < 1048576 ? `${(bytes / 1024).toFixed(0)} KB` : `${(bytes / 1048576).toFixed(1)} MB`;
-
-  let filtered = images.filter(img => {
-    const matchFormat = filterFormat === 'ALL' || getExt(img).includes(filterFormat);
-    const matchSearch = !searchQuery || img.file.name.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchFormat && matchSearch;
+  const removeImage = (id: number) => setImages(prev => {
+    const target = prev.find(img => img.id === id);
+    if (target?.preview.startsWith('blob:')) {
+      URL.revokeObjectURL(target.preview);
+    }
+    return prev.filter(img => img.id !== id);
   });
 
-  if (sortOrder === 'desc') filtered = [...filtered].sort((a, b) => b.file.size - a.file.size);
-  if (sortOrder === 'asc') filtered = [...filtered].sort((a, b) => a.file.size - b.file.size);
+  const formatSize = (bytes: number) => bytes < 1024 ? `${bytes} B` : bytes < 1048576 ? `${(bytes / 1024).toFixed(0)} KB` : `${(bytes / 1048576).toFixed(1)} MB`;
 
   const formatCounts = images.reduce((acc, img) => {
     const ext = getExt(img).split('/')[0];
@@ -263,7 +301,7 @@ export default function ImageConverter() {
               <span className="text-sm font-black text-slate-700">
                 Showing {filtered.length} of {images.length} images
               </span>
-              
+
               {/* Format Filter */}
               <div className="flex gap-1.5 flex-wrap">
                 {FORMATS.filter(f => f === 'ALL' || formatCounts[f]).map(fmt => (
@@ -347,8 +385,10 @@ export default function ImageConverter() {
                         <p className="text-[10px] font-bold text-slate-700 truncate">{img.file.name}</p>
                         <div className="flex items-center justify-between mt-1">
                           <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-md ${getExt(img) === 'JPG' || getExt(img) === 'JPEG' ? 'bg-blue-100 text-blue-600' : getExt(img) === 'PNG' ? 'bg-emerald-100 text-emerald-600' : getExt(img) === 'SVG' ? 'bg-orange-100 text-orange-600' : getExt(img) === 'WEBP' ? 'bg-purple-100 text-purple-600' : 'bg-slate-100 text-slate-500'}`}>{getExt(img)}</span>
-                          <span className="text-[9px] text-slate-400 font-bold">{formatSize(img.file.size)}</span>
-                          <button onClick={e => { e.stopPropagation(); removeImage(img.id); }} className="text-slate-300 hover:text-red-500 transition-all"><X className="h-3.5 w-3.5" /></button>
+                          <div className="flex items-center gap-1.5">
+                            <button onClick={e => { e.stopPropagation(); setSelectedPreview(img); }} className="text-slate-300 hover:text-primary transition-all"><Eye className="h-3.5 w-3.5" /></button>
+                            <button onClick={e => { e.stopPropagation(); removeImage(img.id); }} className="text-slate-300 hover:text-red-500 transition-all"><X className="h-3.5 w-3.5" /></button>
+                          </div>
                         </div>
                       </div>
                     </motion.div>
@@ -367,6 +407,7 @@ export default function ImageConverter() {
                       <p className="text-xs text-slate-400">{img.width && `${img.width}×${img.height} · `}{formatSize(img.file.size)}</p>
                     </div>
                     <span className="text-[10px] font-black px-2 py-1 rounded-lg bg-slate-100 text-slate-500">{getExt(img)}</span>
+                    <button onClick={e => { e.stopPropagation(); setSelectedPreview(img); }} className="text-slate-300 hover:text-primary transition-all"><Eye className="h-4 w-4" /></button>
                     <button onClick={e => { e.stopPropagation(); removeImage(img.id); }} className="text-slate-300 hover:text-red-500 transition-all"><X className="h-4 w-4" /></button>
                   </div>
                 ))}
@@ -378,7 +419,7 @@ export default function ImageConverter() {
           <div className="w-72 flex-shrink-0 space-y-4">
             <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 space-y-6">
               <h3 className="font-black text-slate-900 flex items-center gap-2"><Sliders className="h-5 w-5 text-primary" /> Conversion</h3>
-              
+
               {/* Format */}
               <div>
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Export Format</label>
@@ -424,7 +465,7 @@ export default function ImageConverter() {
             {/* Download Panel */}
             <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 space-y-3">
               <h3 className="font-black text-slate-900 flex items-center gap-2"><Download className="h-5 w-5 text-primary" /> Download</h3>
-              
+
               {selectedCount > 0 && (
                 <button onClick={downloadSelected}
                   className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-2xl font-black text-xs flex items-center justify-center gap-2 shadow-lg transition-all">
@@ -447,6 +488,123 @@ export default function ImageConverter() {
           </div>
         </div>
       )}
+
+      {/* Preview Modal */}
+      <AnimatePresence>
+        {selectedPreview && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex items-center justify-center p-4 md:p-10"
+            onClick={() => setSelectedPreview(null)}
+          >
+            <motion.button
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="absolute top-6 right-6 text-white/70 hover:text-white bg-white/10 p-3 rounded-full backdrop-blur-md transition-all z-10"
+              onClick={() => setSelectedPreview(null)}
+            >
+              <X className="h-6 w-6" />
+            </motion.button>
+
+            <div className="absolute inset-y-0 left-4 flex items-center">
+              <button onClick={(e) => { e.stopPropagation(); navigatePreview(-1); }} className="p-4 rounded-full bg-white/5 hover:bg-white/10 text-white transition-all">
+                <ChevronLeft className="h-8 w-8" />
+              </button>
+            </div>
+
+            <div className="absolute inset-y-0 right-4 flex items-center">
+              <button onClick={(e) => { e.stopPropagation(); navigatePreview(1); }} className="p-4 rounded-full bg-white/5 hover:bg-white/10 text-white transition-all">
+                <ChevronRight className="h-8 w-8" />
+              </button>
+            </div>
+
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="max-w-5xl w-full flex flex-col items-center gap-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img
+                src={selectedPreview.preview}
+                alt={selectedPreview.file.name}
+                className="max-h-[75vh] w-auto object-contain rounded-2xl shadow-2xl border border-white/10"
+              />
+              <div className="text-center bg-black/40 backdrop-blur-xl px-6 py-3 rounded-2xl border border-white/5">
+                <h3 className="text-white font-black text-lg truncate max-w-lg mb-1">{selectedPreview.file.name}</h3>
+                <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">{selectedPreview.width} × {selectedPreview.height} · {formatSize(selectedPreview.file.size)}</p>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="mt-16 bg-slate-50 rounded-3xl border border-slate-100 p-10 shadow-sm">
+        <div className="max-w-4xl mx-auto space-y-6">
+          <h2 className="text-3xl font-black text-slate-900">Why Image Conversion Matters for Modern Websites</h2>
+          <p className="text-slate-600 leading-8">
+            In a fast-paced digital world, image optimization is one of the most important tasks for any website owner, content creator, or marketer. Large or unsupported image file formats can significantly slow down a page, hurt user experience, and negatively impact search engine rankings. With the Image Extractor Pro conversion workflow, you can easily turn high-quality photos into efficient, web-ready formats such as WebP, PNG, JPG, and AVIF while preserving clarity and color.
+          </p>
+          <h3 className="text-2xl font-bold text-slate-900">Increase page speed without sacrificing quality</h3>
+          <p className="text-slate-600 leading-8">
+            One of the most compelling benefits of converting images is improved page load speed. Modern formats like WebP and AVIF are designed to compress images more effectively than legacy formats while maintaining sharp detail. This means you can deliver the same visual experience to users with smaller file sizes. A faster page load time is especially valuable for mobile users, where network performance can vary widely. Better speed reduces bounce rates and encourages visitors to stay longer, which is a key ranking factor for SEO.
+          </p>
+          <h3 className="text-2xl font-bold text-slate-900">Simplify design workflows with multi-format support</h3>
+          <p className="text-slate-600 leading-8">
+            Whether you are working with product photography, blog visuals, or social media assets, the ability to switch between image formats quickly makes your workflow much easier. Some platforms still require PNGs for transparency, while others benefit from the smaller size of JPG. WebP and AVIF are ideal for high-resolution landing pages and responsive design. With this tool, you can choose the best format for each project and test multiple export options without installing additional software.
+          </p>
+          <h3 className="text-2xl font-bold text-slate-900">Batch processing for maximum efficiency</h3>
+          <p className="text-slate-600 leading-8">
+            The most effective image optimization tools do more than convert a single file. Bulk conversion saves hours of manual work by letting you process multiple images at once. This page offers a powerful batch conversion experience where you can drag and drop dozens of files, set your target format and quality, and download a ZIP archive of ready-to-use assets. That is especially useful for agencies, ecommerce stores, and content teams who need to prepare large galleries or product catalogs quickly.
+          </p>
+          <h3 className="text-2xl font-bold text-slate-900">How to choose the right format for your project</h3>
+          <p className="text-slate-600 leading-8">
+            Choosing the right image format depends on your use case. PNG is excellent for graphics, illustrations, icons, and transparent overlays. JPG works well for photographs and images where a small amount of compression loss is acceptable. WebP offers a great blend of quality and compression for both photographs and designs, and AVIF is the newest standard for superior compression on modern browsers. This page helps you test each format and select the one that gives the best balance of quality, performance, and compatibility.
+          </p>
+          <h3 className="text-2xl font-bold text-slate-900">Maintain consistent visuals across channels</h3>
+          <p className="text-slate-600 leading-8">
+            For digital campaigns, brand consistency is crucial. When you convert images with the right settings, you ensure every visual asset is prepared for the destination it will appear on. Social media profiles, landing pages, product listings, email newsletters, and blog posts all have their own ideal image specifications. This tool simplifies that process by letting you resize and convert images in one place, so every asset looks polished no matter where it is published.
+          </p>
+          <h3 className="text-2xl font-bold text-slate-900">Optimize for SEO and accessibility</h3>
+          <p className="text-slate-600 leading-8">
+            Search engines prefer fast websites with optimized media. Properly converted images can improve Core Web Vitals, notably Largest Contentful Paint (LCP) and Total Blocking Time (TBT). In addition, smaller images are easier to serve across different devices and require less bandwidth for users on slower connections. When paired with appropriate alt text and responsive markup, image conversion becomes a powerful SEO strategy.
+          </p>
+          <h3 className="text-2xl font-bold text-slate-900">Reduce storage costs and simplify delivery</h3>
+          <p className="text-slate-600 leading-8">
+            High-resolution image files can quickly consume storage space and increase delivery costs on your hosting provider or CDN. By converting images to a lean format and applying a reasonable quality setting, you reduce storage requirements and lower bandwidth usage. That makes your site more cost-effective to run and helps keep your asset library manageable.
+          </p>
+          <h3 className="text-2xl font-bold text-slate-900">Use cases for every kind of user</h3>
+          <p className="text-slate-600 leading-8">
+            This tool is useful for ecommerce owners preparing product photos, bloggers optimizing featured images, marketing teams creating campaign visuals, designers testing file formats, and developers who need website-ready assets. It works equally well for beginners who want a simple drag-and-drop experience and for advanced users who want control over format, quality, and output selection.
+          </p>
+          <h3 className="text-2xl font-bold text-slate-900">Free, fast, and browser-based</h3>
+          <p className="text-slate-600 leading-8">
+            Because this tool runs entirely in the browser, there is no need to install anything or create an account. You can convert images immediately from any modern device, whether you are working on a desktop, laptop, or tablet. The user-friendly interface is designed to reduce friction so you can focus on creative work instead of technical steps.
+          </p>
+          <p className="text-slate-600 leading-8">
+            The combination of drag-and-drop upload, preview support, export format options, and ZIP download gives you a complete image optimization workflow in one place. That means less time spent switching tools and more time spent publishing beautiful, performant visuals.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+            <div className="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm">
+              <h4 className="text-xl font-black text-slate-900 mb-3">Faster workflow for teams</h4>
+              <p className="text-slate-600 leading-7">
+                Teams can process dozens of images in minutes, share the converted assets across departments, and maintain consistent format choices without extra tools. This is especially helpful for agencies that manage multiple clients and need to deliver optimized content on schedule.
+              </p>
+            </div>
+            <div className="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm">
+              <h4 className="text-xl font-black text-slate-900 mb-3">Better results for every project</h4>
+              <p className="text-slate-600 leading-7">
+                From website thumbnails to full-screen banners, converting images correctly ensures the highest quality visual output. You can create lighter graphics for fast pages or richer images for high-impact layouts while keeping file size under control.
+              </p>
+            </div>
+          </div>
+          <p className="text-slate-500 text-sm mt-6">
+            Ready to optimize your images? Use the conversion controls above to choose your preferred format, set quality, and prepare a polished set of website-ready assets. This tool is the fastest way to convert, compress, and download images without needing any additional software.
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

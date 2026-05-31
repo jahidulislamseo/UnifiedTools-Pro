@@ -222,6 +222,14 @@ const allTools = [
     category: "🤖 AI Writing Tools",
     items: [
       {
+        title: "English Speaking Agent",
+        description: "Practice spoken English with microphone input, AI replies, pronunciation-style feedback, and scores.",
+        icon: <Bot className="h-8 w-8 text-violet-400" />,
+        path: "/tools/ai-tools/english-speaking-agent",
+        status: "live",
+        badge: "Voice AI",
+      },
+      {
         title: "AI Content Detector",
         description: "Detect if text was written by AI (ChatGPT, Claude, etc.) with sentence-level analysis.",
         icon: <Bot className="h-8 w-8 text-violet-400" />,

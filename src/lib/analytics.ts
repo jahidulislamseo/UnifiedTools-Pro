@@ -11,6 +11,7 @@ export const TOOL_INFO: Record<string, { name: string; category: string }> = {
   '/tools/utilities/password-strength': { name: 'Password Strength', category: 'Utility' },
   '/tools/utilities/qr-scanner': { name: 'QR Scanner', category: 'Utility' },
   '/tools/ai-tools/gpt-checker': { name: 'GPT Checker', category: 'AI Tools' },
+  '/tools/ai-tools/english-speaking-agent': { name: 'English Speaking Agent', category: 'AI Tools' },
   '/tools/ai-tools/grammar-checker': { name: 'Grammar Checker', category: 'AI Tools' },
   '/tools/ai-tools/paraphrasing-tool': { name: 'Paraphrasing Tool', category: 'AI Tools' },
   '/tools/ai-tools/plagiarism-checker': { name: 'Plagiarism Checker', category: 'AI Tools' },

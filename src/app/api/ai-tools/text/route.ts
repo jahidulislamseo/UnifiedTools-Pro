@@ -57,6 +57,25 @@ Text:
 ${text}
 """`;
   },
+
+  "speaking-coach": (text) => `You are a friendly English speaking coach for a Bangladeshi beginner.
+
+Have a short natural spoken conversation and give concise feedback.
+
+Return ONLY valid JSON, no markdown, no code blocks:
+{"reply":"1-2 sentence conversational response","score":75,"correction":"Correct version or Perfect!","tip":"One short speaking tip"}
+
+Rules:
+- Keep reply warm, simple, and natural.
+- If the user writes Bengali, encourage them to try in English.
+- score: 1-100 for the user's English quality.
+- correction: If there is a grammar mistake, give the correct version in one short sentence. If perfect, write "Perfect!".
+- tip: One short practical tip.
+
+Conversation input:
+"""
+${text}
+"""`,
 };
 
 function extractJson(text: string) {
@@ -220,7 +239,8 @@ async function callAI(prompt: string) {
 export async function POST(req: NextRequest) {
   try {
     const { tool, text, mode } = await req.json();
-    if (!tool || !text || text.trim().length < 10) {
+    const minLength = tool === "speaking-coach" ? 1 : 10;
+    if (!tool || !text || text.trim().length < minLength) {
       return NextResponse.json({ error: "Text too short or missing tool" }, { status: 400 });
     }
     const promptFn = PROMPTS[tool];

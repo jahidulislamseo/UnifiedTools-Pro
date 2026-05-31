@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect } from "react";
 import ToolSeoContent from "@/components/ToolSeoContent";
 import { useDropzone } from "react-dropzone";
 import { motion, AnimatePresence } from "framer-motion";
-import { UploadCloud, Download, Loader2, X, Search, Globe, Package, Grid, List, CheckSquare, Square, ArrowUpDown, MapPin, ArrowRight, Sliders, Layers, FileImage, Eye, ChevronLeft, ChevronRight } from "lucide-react";
+import { UploadCloud, Download, Loader2, X, Search, Globe, Package, Grid, List, CheckSquare, Square, ArrowUpDown, MapPin, ArrowRight, Sliders, Layers, FileImage, Eye, ChevronLeft, ChevronRight, Copy, Check } from "lucide-react";
 import JSZip from "jszip";
 import { useRouter } from "next/navigation";
 
@@ -12,6 +12,7 @@ interface ImageFile {
   id: number;
   file: File;
   preview: string;
+  sourceUrl?: string;
   status: 'idle' | 'processing' | 'done' | 'error';
   result?: Blob;
   width?: number;
@@ -43,6 +44,11 @@ export default function ImageConverter() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOrder, setSortOrder] = useState<'none' | 'asc' | 'desc'>('none');
   const [selectedPreview, setSelectedPreview] = useState<ImageFile | null>(null);
+  const [copiedId, setCopiedId] = useState<number | null>(null);
+  const [extractionResult, setExtractionResult] = useState<{ count: number; method?: string } | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const ITEMS_PER_PAGE = 100;
 
   const getExt = (img: ImageFile) => img.file.name.split('.').pop()?.toUpperCase() || 'UNK';
 
@@ -53,6 +59,11 @@ export default function ImageConverter() {
   });
   if (sortOrder === 'desc') filtered = [...filtered].sort((a, b) => b.file.size - a.file.size);
   if (sortOrder === 'asc') filtered = [...filtered].sort((a, b) => a.file.size - b.file.size);
+
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  useEffect(() => { setCurrentPage(1); }, [filterFormat, searchQuery, sortOrder]);
 
   const navigatePreview = (direction: number) => {
     if (!selectedPreview) return;
@@ -98,7 +109,7 @@ export default function ImageConverter() {
   const handleExtract = async () => {
     if (!extractUrl) return;
     setIsExtracting(true);
-    setExtractionProgress(5);
+    setExtractionProgress(10);
     try {
       const res = await fetch("/api/extract-images", {
         method: "POST",
@@ -108,31 +119,39 @@ export default function ImageConverter() {
       const data = await res.json();
       if (data.error) throw new Error(data.error);
 
-      const total = Math.min(data.images.length, 50);
-      const imageUrls = data.images.slice(0, total);
+      setExtractionProgress(90);
 
-      // Parallel processing with controlled concurrency (batches of 5)
-      const batchSize = 5;
-      for (let i = 0; i < imageUrls.length; i += batchSize) {
-        const batch = imageUrls.slice(i, i + batchSize);
-        const results = await Promise.allSettled(batch.map(async (url: string, index: number) => {
-          const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(url)}`;
-          const imgRes = await fetch(proxyUrl);
-          if (!imgRes.ok) throw new Error("Fetch failed");
-          const blob = await imgRes.blob();
-          const fileName = url.split('/').pop()?.split('?')[0] || `extracted-${i + index}.jpg`;
-          const file = new File([blob], fileName, { type: blob.type });
-          return { id: Date.now() + i + index, file, preview: proxyUrl, status: 'idle' as const, selected: false };
-        }));
+      const imageUrls = data.images as string[];
+      const mimeMap: Record<string, string> = {
+        png: 'image/png', gif: 'image/gif', webp: 'image/webp',
+        svg: 'image/svg+xml', avif: 'image/avif', bmp: 'image/bmp',
+      };
 
-        const successful = results
-          .filter((r): r is PromiseFulfilledResult<ImageFile> => r.status === 'fulfilled')
-          .map(r => r.value);
+      // Add ALL images instantly — no proxy fetching upfront
+      const newImages: ImageFile[] = imageUrls.map((url, index) => {
+        const rawName = url.split('/').pop()?.split('?')[0] || `image-${index}.jpg`;
+        const ext = rawName.split('.').pop()?.toLowerCase() || 'jpg';
+        const type = mimeMap[ext] || 'image/jpeg';
+        const item: ImageFile = {
+          id: Date.now() + index,
+          file: new File([], rawName, { type }),
+          preview: url,
+          sourceUrl: url,
+          status: 'idle',
+          selected: false,
+        };
+        // Load dimensions in background
+        const imgEl = new Image();
+        imgEl.crossOrigin = 'anonymous';
+        imgEl.src = url;
+        imgEl.onload = () => setImages(prev =>
+          prev.map(p => p.id === item.id ? { ...p, width: imgEl.naturalWidth, height: imgEl.naturalHeight } : p)
+        );
+        return item;
+      });
 
-        setImages(prev => [...prev, ...successful]);
-        setExtractionProgress(Math.round(((i + batch.length) / total) * 100));
-      }
-
+      setImages(prev => [...prev, ...newImages]);
+      setExtractionProgress(100);
       setExtractUrl("");
     } catch (err: any) {
       alert("Extraction failed: " + err.message);
@@ -140,6 +159,19 @@ export default function ImageConverter() {
       setIsExtracting(false);
       setExtractionProgress(0);
     }
+  };
+
+  // Smart blob fetcher: direct for blob/local URLs, proxy for external
+  const fetchImageBlob = async (img: ImageFile): Promise<Blob> => {
+    const url = img.sourceUrl || img.preview;
+    if (url.startsWith('blob:') || url.startsWith('/')) {
+      const res = await fetch(url);
+      return res.blob();
+    }
+    const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(url)}`;
+    const res = await fetch(proxyUrl);
+    if (!res.ok) throw new Error(`Failed to fetch ${img.file.name}`);
+    return res.blob();
   };
 
   const toggleSelect = (id: number) => setImages(prev => prev.map(img => img.id === id ? { ...img, selected: !img.selected } : img));
@@ -169,8 +201,14 @@ export default function ImageConverter() {
       updated[i] = { ...updated[i], status: 'processing' };
       setImages([...updated]);
       try {
+        let fileToConvert = updated[i].file;
+        // External image: fetch blob via proxy first
+        if (fileToConvert.size === 0 && updated[i].sourceUrl) {
+          const blob = await fetchImageBlob(updated[i]);
+          fileToConvert = new File([blob], updated[i].file.name, { type: blob.type || updated[i].file.type });
+        }
         const fd = new FormData();
-        fd.append("file", updated[i].file);
+        fd.append("file", fileToConvert);
         fd.append("format", targetFormat);
         fd.append("quality", quality.toString());
         if (preset.width) fd.append("width", preset.width.toString());
@@ -188,18 +226,20 @@ export default function ImageConverter() {
     const selected = images.filter(img => img.selected);
     if (selected.length === 0) return;
     if (selected.length === 1) {
+      const blob = await fetchImageBlob(selected[0]);
       const a = document.createElement("a");
-      a.href = selected[0].preview;
+      a.href = URL.createObjectURL(blob);
       a.download = selected[0].file.name;
       a.click();
       return;
     }
     const zip = new JSZip();
-    for (const img of selected) {
-      const res = await fetch(img.preview);
-      const blob = await res.blob();
-      zip.file(img.file.name, blob);
-    }
+    await Promise.allSettled(selected.map(async img => {
+      try {
+        const blob = await fetchImageBlob(img);
+        zip.file(img.file.name, blob);
+      } catch {}
+    }));
     const content = await zip.generateAsync({ type: "blob" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(content);
@@ -209,7 +249,7 @@ export default function ImageConverter() {
 
   const downloadAllZip = async () => {
     const zip = new JSZip();
-    images.forEach((img, i) => {
+    images.forEach(img => {
       if (img.result) zip.file(`${img.file.name.split('.')[0]}.${targetFormat}`, img.result);
     });
     const content = await zip.generateAsync({ type: "blob" });
@@ -233,6 +273,25 @@ export default function ImageConverter() {
   };
 
   const selectedCount = images.filter(i => i.selected).length;
+
+  const [bulkCopied, setBulkCopied] = useState(false);
+
+  const copyUrl = (img: ImageFile, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const url = img.sourceUrl || img.preview;
+    navigator.clipboard.writeText(url).then(() => {
+      setCopiedId(img.id);
+      setTimeout(() => setCopiedId(null), 2000);
+    });
+  };
+
+  const bulkCopyUrls = () => {
+    const urls = filtered.map(img => img.sourceUrl || img.preview).join('\n');
+    navigator.clipboard.writeText(urls).then(() => {
+      setBulkCopied(true);
+      setTimeout(() => setBulkCopied(false), 2500);
+    });
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
@@ -299,7 +358,10 @@ export default function ImageConverter() {
             {/* Toolbar */}
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm px-5 py-3 mb-4 flex flex-wrap items-center gap-3">
               <span className="text-sm font-black text-slate-700">
-                Showing {filtered.length} of {images.length} images
+                {filtered.length < images.length
+                  ? `${filtered.length} filtered`
+                  : `${images.length} images`}
+                {totalPages > 1 && <span className="text-slate-400 font-normal ml-1">· page {currentPage}/{totalPages}</span>}
               </span>
 
               {/* Format Filter */}
@@ -323,6 +385,12 @@ export default function ImageConverter() {
               <button onClick={() => setSortOrder(s => s === 'none' ? 'desc' : s === 'desc' ? 'asc' : 'none')}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-100 text-xs font-bold text-slate-500 hover:bg-slate-100 transition-all">
                 <ArrowUpDown className="h-3.5 w-3.5" /> Size {sortOrder !== 'none' ? (sortOrder === 'desc' ? '↓' : '↑') : ''}
+              </button>
+
+              {/* Bulk Copy URLs */}
+              <button onClick={bulkCopyUrls}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black border transition-all ${bulkCopied ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-slate-50 border-slate-100 text-slate-500 hover:bg-slate-100'}`}>
+                {bulkCopied ? <><Check className="h-3.5 w-3.5" /> Copied {filtered.length}!</> : <><Copy className="h-3.5 w-3.5" /> Copy All URLs</>}
               </button>
 
               {/* View Toggle */}
@@ -360,7 +428,7 @@ export default function ImageConverter() {
             {viewMode === 'grid' ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                 <AnimatePresence>
-                  {filtered.map(img => (
+                  {paginated.map(img => (
                     <motion.div key={img.id} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
                       className={`relative bg-white rounded-2xl border-2 overflow-hidden cursor-pointer transition-all ${img.selected ? 'border-primary shadow-lg shadow-primary/20' : 'border-slate-100 hover:border-slate-200'}`}
                       onClick={() => toggleSelect(img.id)}>
@@ -386,6 +454,9 @@ export default function ImageConverter() {
                         <div className="flex items-center justify-between mt-1">
                           <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-md ${getExt(img) === 'JPG' || getExt(img) === 'JPEG' ? 'bg-blue-100 text-blue-600' : getExt(img) === 'PNG' ? 'bg-emerald-100 text-emerald-600' : getExt(img) === 'SVG' ? 'bg-orange-100 text-orange-600' : getExt(img) === 'WEBP' ? 'bg-purple-100 text-purple-600' : 'bg-slate-100 text-slate-500'}`}>{getExt(img)}</span>
                           <div className="flex items-center gap-1.5">
+                            <button onClick={e => copyUrl(img, e)} title="Copy image URL" className={`transition-all ${copiedId === img.id ? 'text-emerald-500' : 'text-slate-300 hover:text-primary'}`}>
+                              {copiedId === img.id ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                            </button>
                             <button onClick={e => { e.stopPropagation(); setSelectedPreview(img); }} className="text-slate-300 hover:text-primary transition-all"><Eye className="h-3.5 w-3.5" /></button>
                             <button onClick={e => { e.stopPropagation(); removeImage(img.id); }} className="text-slate-300 hover:text-red-500 transition-all"><X className="h-3.5 w-3.5" /></button>
                           </div>
@@ -397,7 +468,7 @@ export default function ImageConverter() {
               </div>
             ) : (
               <div className="space-y-2">
-                {filtered.map(img => (
+                {paginated.map(img => (
                   <div key={img.id} onClick={() => toggleSelect(img.id)}
                     className={`bg-white rounded-2xl border-2 p-3 flex items-center gap-4 cursor-pointer transition-all ${img.selected ? 'border-primary' : 'border-slate-100 hover:border-slate-200'}`}>
                     {img.selected ? <CheckSquare className="h-5 w-5 text-primary flex-shrink-0" /> : <Square className="h-5 w-5 text-slate-300 flex-shrink-0" />}
@@ -407,10 +478,59 @@ export default function ImageConverter() {
                       <p className="text-xs text-slate-400">{img.width && `${img.width}×${img.height} · `}{formatSize(img.file.size)}</p>
                     </div>
                     <span className="text-[10px] font-black px-2 py-1 rounded-lg bg-slate-100 text-slate-500">{getExt(img)}</span>
+                    <button onClick={e => copyUrl(img, e)} title="Copy image URL" className={`transition-all ${copiedId === img.id ? 'text-emerald-500' : 'text-slate-300 hover:text-primary'}`}>
+                      {copiedId === img.id ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                    </button>
                     <button onClick={e => { e.stopPropagation(); setSelectedPreview(img); }} className="text-slate-300 hover:text-primary transition-all"><Eye className="h-4 w-4" /></button>
                     <button onClick={e => { e.stopPropagation(); removeImage(img.id); }} className="text-slate-300 hover:text-red-500 transition-all"><X className="h-4 w-4" /></button>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-6 flex-wrap">
+                {/* Prev */}
+                <button
+                  onClick={() => { setCurrentPage(p => Math.max(1, p - 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                  disabled={currentPage === 1}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-black border bg-white border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm">
+                  <ChevronLeft className="h-4 w-4" /> Prev
+                </button>
+
+                {/* Page numbers */}
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter(p => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 2)
+                  .reduce<(number | 'dots')[]>((acc, p, idx, arr) => {
+                    if (idx > 0 && p - (arr[idx - 1] as number) > 1) acc.push('dots');
+                    acc.push(p);
+                    return acc;
+                  }, [])
+                  .map((item, idx) =>
+                    item === 'dots' ? (
+                      <span key={`dots-${idx}`} className="px-2 text-slate-400 text-xs font-bold">…</span>
+                    ) : (
+                      <button
+                        key={item}
+                        onClick={() => { setCurrentPage(item as number); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                        className={`w-9 h-9 rounded-xl text-xs font-black border transition-all ${currentPage === item ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}>
+                        {item}
+                      </button>
+                    )
+                  )}
+
+                {/* Next */}
+                <button
+                  onClick={() => { setCurrentPage(p => Math.min(totalPages, p + 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                  disabled={currentPage === totalPages}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-black border bg-white border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm">
+                  Next <ChevronRight className="h-4 w-4" />
+                </button>
+
+                <span className="text-xs text-slate-400 font-bold ml-2">
+                  {(currentPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, filtered.length)} of {filtered.length}
+                </span>
               </div>
             )}
           </div>
@@ -480,6 +600,11 @@ export default function ImageConverter() {
                 </button>
               )}
 
+              <button onClick={bulkCopyUrls}
+                className={`w-full py-3 rounded-2xl font-black text-xs flex items-center justify-center gap-2 transition-all border ${bulkCopied ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-slate-50 text-slate-600 border-slate-100 hover:bg-slate-100'}`}>
+                {bulkCopied ? <><Check className="h-4 w-4" /> Copied {images.length} URLs!</> : <><Copy className="h-4 w-4" /> Copy All URLs ({images.length})</>}
+              </button>
+
               <button onClick={sendToGeoTagger}
                 className="w-full bg-primary/10 hover:bg-primary/20 text-primary py-3 rounded-2xl font-black text-xs flex items-center justify-center gap-2 transition-all border border-primary/20">
                 <MapPin className="h-4 w-4" /> Send to Geo-Tagger <ArrowRight className="h-4 w-4" />
@@ -532,9 +657,15 @@ export default function ImageConverter() {
                 alt={selectedPreview.file.name}
                 className="max-h-[75vh] w-auto object-contain rounded-2xl shadow-2xl border border-white/10"
               />
-              <div className="text-center bg-black/40 backdrop-blur-xl px-6 py-3 rounded-2xl border border-white/5">
-                <h3 className="text-white font-black text-lg truncate max-w-lg mb-1">{selectedPreview.file.name}</h3>
+              <div className="text-center bg-black/40 backdrop-blur-xl px-6 py-3 rounded-2xl border border-white/5 flex flex-col items-center gap-2">
+                <h3 className="text-white font-black text-lg truncate max-w-lg">{selectedPreview.file.name}</h3>
                 <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">{selectedPreview.width} × {selectedPreview.height} · {formatSize(selectedPreview.file.size)}</p>
+                <button
+                  onClick={e => copyUrl(selectedPreview, e)}
+                  className={`flex items-center gap-2 px-4 py-1.5 rounded-xl text-xs font-black transition-all border ${copiedId === selectedPreview.id ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-white/10 text-white/70 border-white/10 hover:bg-white/20 hover:text-white'}`}
+                >
+                  {copiedId === selectedPreview.id ? <><Check className="h-3.5 w-3.5" /> Copied!</> : <><Copy className="h-3.5 w-3.5" /> Copy URL</>}
+                </button>
               </div>
             </motion.div>
           </motion.div>

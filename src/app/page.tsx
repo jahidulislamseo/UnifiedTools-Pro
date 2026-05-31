@@ -2,90 +2,119 @@
 
 import { motion } from "framer-motion";
 import { 
-  FileImage, MapPin, Zap, Globe, FileText, Calculator, 
-  Calendar, ArrowRight, Star, Shield, Cpu, Download,
-  CheckCircle, Sparkles
+  MapPin, Zap, Globe, FileText, Calculator, 
+  ArrowRight, Star, Shield, Cpu, Download,
+  CheckCircle, Sparkles, Bot, Code, QrCode,
+  Search, Lock, RefreshCw
 } from "lucide-react";
 import Link from "next/link";
 
 const featuredTools = [
   {
-    title: "Image Extractor Pro",
-    description: "Extract all images from any website URL with one click. 20+ formats supported.",
-    icon: <Globe className="h-7 w-7" />,
-    path: "/tools/image-converter",
+    title: "SEO Tools",
+    description: "Generate meta tags, preview SERP snippets, build schema, audit pages, and analyze keyword density.",
+    icon: <Search className="h-7 w-7" />,
+    path: "/tools/seo",
     gradient: "from-blue-500 to-indigo-600",
     lightBg: "bg-gradient-to-br from-blue-50 to-indigo-50",
     iconBg: "bg-blue-500",
-    badge: "🔥 Most Popular",
+    badge: "SEO Suite",
   },
   {
     title: "GeoImage Tagger",
-    description: "Add GPS EXIF metadata to images and dominate local SEO rankings with AI.",
+    description: "Add GPS EXIF metadata, titles, descriptions, and keywords to images for local SEO workflows.",
     icon: <MapPin className="h-7 w-7" />,
     path: "/tools/geo-tagger",
     gradient: "from-rose-500 to-pink-600",
     lightBg: "bg-gradient-to-br from-rose-50 to-pink-50",
     iconBg: "bg-rose-500",
-    badge: "⚡ SEO Tool",
+    badge: "Local SEO",
   },
   {
     title: "Image Converter",
-    description: "Bulk convert images to WebP, PNG, JPG, AVIF with social media presets.",
-    icon: <FileImage className="h-7 w-7" />,
+    description: "Convert, crop, remove backgrounds, extract palettes, and prepare images for publishing.",
+    icon: <RefreshCw className="h-7 w-7" />,
     path: "/tools/image-converter",
     gradient: "from-emerald-500 to-teal-600",
     lightBg: "bg-gradient-to-br from-emerald-50 to-teal-50",
     iconBg: "bg-emerald-500",
-    badge: "✨ Updated",
+    badge: "Image Tools",
+  },
+  {
+    title: "AI Writing Tools",
+    description: "Check grammar, detect AI text, rewrite content, scan plagiarism, and run reverse image search.",
+    icon: <Bot className="h-7 w-7" />,
+    path: "/tools/ai-tools/grammar-checker",
+    gradient: "from-violet-500 to-fuchsia-600",
+    lightBg: "bg-gradient-to-br from-violet-50 to-fuchsia-50",
+    iconBg: "bg-violet-500",
+    badge: "AI Suite",
   },
   {
     title: "PDF Tools",
-    description: "Convert, merge, and extract text from PDFs instantly. No upload limits.",
+    description: "Extract text, merge documents, and compress PDFs for sharing, storage, and publishing.",
     icon: <FileText className="h-7 w-7" />,
     path: "/tools/pdf/to-text",
-    gradient: "from-violet-500 to-purple-600",
-    lightBg: "bg-gradient-to-br from-violet-50 to-purple-50",
-    iconBg: "bg-violet-500",
+    gradient: "from-sky-500 to-cyan-600",
+    lightBg: "bg-gradient-to-br from-sky-50 to-cyan-50",
+    iconBg: "bg-sky-500",
   },
   {
-    title: "Age Calculator",
-    description: "Calculate your exact age in years, months and days with a beautiful UI.",
-    icon: <Calendar className="h-7 w-7" />,
-    path: "/tools/calculators/age",
+    title: "Developer Utilities",
+    description: "Format JSON, encode Base64, generate hashes, encode URLs, and create secure passwords.",
+    icon: <Code className="h-7 w-7" />,
+    path: "/tools/dev/json-formatter",
     gradient: "from-orange-500 to-amber-500",
     lightBg: "bg-gradient-to-br from-orange-50 to-amber-50",
     iconBg: "bg-orange-500",
   },
   {
-    title: "Loan Calculator",
-    description: "Calculate EMI, total interest and repayment schedule instantly.",
+    title: "Calculators",
+    description: "Calculate age, percentage changes, discounts, loan EMI, interest, and repayment totals.",
     icon: <Calculator className="h-7 w-7" />,
-    path: "/tools/calculators/loan",
+    path: "/tools/calculators/percentage",
     gradient: "from-teal-500 to-cyan-600",
     lightBg: "bg-gradient-to-br from-teal-50 to-cyan-50",
     iconBg: "bg-teal-500",
   },
+  {
+    title: "Security Checks",
+    description: "Review SSL certificates, passwords, website security signals, IP data, and safe access basics.",
+    icon: <Lock className="h-7 w-7" />,
+    path: "/tools/security",
+    gradient: "from-slate-700 to-slate-950",
+    lightBg: "bg-gradient-to-br from-slate-50 to-slate-100",
+    iconBg: "bg-slate-800",
+  },
+  {
+    title: "QR & Utility Tools",
+    description: "Generate QR codes, scan QR images, lookup IP addresses, and extract color palettes quickly.",
+    icon: <QrCode className="h-7 w-7" />,
+    path: "/tools/qr-code",
+    gradient: "from-fuchsia-500 to-pink-600",
+    lightBg: "bg-gradient-to-br from-fuchsia-50 to-pink-50",
+    iconBg: "bg-fuchsia-500",
+  },
 ];
 
 const stats = [
-  { value: "20+", label: "Image Formats" },
-  { value: "100%", label: "Free Forever" },
-  { value: "50+", label: "Images/Batch" },
-  { value: "10x", label: "Faster SEO" },
+  { value: "35+", label: "Live Tools" },
+  { value: "8", label: "Tool Categories" },
+  { value: "0", label: "Install Needed" },
+  { value: "24/7", label: "Browser Access" },
 ];
 
 const features = [
-  { icon: <Zap className="h-6 w-6 text-yellow-500" />, bg: "bg-yellow-50", title: "Lightning Fast", desc: "Process hundreds of images in seconds." },
-  { icon: <Shield className="h-6 w-6 text-emerald-500" />, bg: "bg-emerald-50", title: "Privacy First", desc: "Your images never leave your server." },
-  { icon: <Cpu className="h-6 w-6 text-blue-500" />, bg: "bg-blue-50", title: "AI Powered", desc: "Smart auto-generated SEO metadata." },
-  { icon: <Download className="h-6 w-6 text-violet-500" />, bg: "bg-violet-50", title: "Bulk Export", desc: "One-click ZIP download for all files." },
+  { icon: <Zap className="h-6 w-6 text-yellow-500" />, bg: "bg-yellow-50", title: "Fast Daily Work", desc: "Open a tool, finish the task, and move on without installing software." },
+  { icon: <Shield className="h-6 w-6 text-emerald-500" />, bg: "bg-emerald-50", title: "Practical Security", desc: "Check passwords, SSL, hashes, IP data, and website security signals in one place." },
+  { icon: <Cpu className="h-6 w-6 text-blue-500" />, bg: "bg-blue-50", title: "AI Assisted", desc: "Use AI tools for writing, originality checks, paraphrasing, and image SEO support." },
+  { icon: <Download className="h-6 w-6 text-violet-500" />, bg: "bg-violet-50", title: "Export Ready", desc: "Download converted files, merged PDFs, extracted text, QR codes, and optimized assets." },
 ];
 
 const testimonials = [
-  { text: "This tool saved me hours of work! Extracted 90 images from my client's site in seconds.", name: "Sarah M.", role: "SEO Consultant" },
-  { text: "The GeoImage Tagger completely transformed my local SEO rankings within weeks.", name: "James K.", role: "Digital Marketer" },
-  { text: "Finally a tool that works! Clean UI and incredibly fast image processing.", name: "Priya S.", role: "Web Developer" },
+  { text: "I use it for quick SEO checks, schema drafts, and image cleanup before publishing client pages.", name: "Sarah M.", role: "SEO Consultant" },
+  { text: "The developer tools save me from opening five different websites for JSON, Base64, hash, and URL tasks.", name: "Priya S.", role: "Web Developer" },
+  { text: "PDF, QR, image, and calculator tools in one dashboard makes daily operations much smoother.", name: "James K.", role: "Digital Marketer" },
 ];
 
 export default function Home() {
@@ -101,28 +130,28 @@ export default function Home() {
           <motion.span 
             initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }}
             className="inline-flex items-center gap-2 bg-primary/8 text-primary text-xs font-black px-5 py-2.5 rounded-full mb-8 border border-primary/15 shadow-sm">
-            <Sparkles className="h-3.5 w-3.5" /> The Ultimate SEO & Developer Toolkit
+            <Sparkles className="h-3.5 w-3.5" /> SEO, AI, PDF, Image, Security & Developer Tools
           </motion.span>
 
           <h1 className="text-6xl md:text-8xl font-black tracking-tighter mb-6 text-slate-900 leading-[0.9]">
-            Extract. Convert.<br />
+            One Toolkit for<br />
             <span className="relative">
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-blue-600 to-indigo-700">
-                Dominate SEO.
+                Everyday Web Work.
               </span>
             </span>
           </h1>
 
           <p className="mt-6 max-w-2xl text-xl text-slate-500 mx-auto mb-12 font-medium leading-relaxed">
-            Extract images from any website, geotag for local SEO, convert formats, and manage PDFs —
-            all in one powerful, free toolkit.
+            UnifiedTools Pro brings practical browser-based tools for SEO, content writing, images, PDFs,
+            calculators, QR codes, security checks, and developer utilities into one clean workspace.
           </p>
 
           <div className="flex flex-wrap gap-4 justify-center">
-            <Link href="/tools/image-converter">
+            <Link href="/tools/all">
               <motion.button whileHover={{ scale: 1.04, boxShadow: "0 20px 40px -8px rgba(0,0,0,0.25)" }} whileTap={{ scale: 0.97 }}
                 className="bg-slate-900 hover:bg-black text-white px-8 py-4 rounded-2xl font-black text-base flex items-center gap-3 shadow-xl transition-all">
-                <Globe className="h-5 w-5" /> Start Extracting <ArrowRight className="h-5 w-5" />
+                <Globe className="h-5 w-5" /> Explore Tools <ArrowRight className="h-5 w-5" />
               </motion.button>
             </Link>
             <Link href="/tools/all">
@@ -135,7 +164,7 @@ export default function Home() {
 
           {/* Trust badges */}
           <div className="flex items-center justify-center gap-6 mt-10 flex-wrap">
-            {["No Signup Required", "100% Free", "Privacy Friendly"].map((t, i) => (
+            {["No Signup Required", "Fast Browser Tools", "Built for Real Workflows"].map((t, i) => (
               <div key={i} className="flex items-center gap-2 text-sm text-slate-500 font-semibold">
                 <CheckCircle className="h-4 w-4 text-emerald-500" /> {t}
               </div>
@@ -160,9 +189,9 @@ export default function Home() {
       <section className="max-w-7xl mx-auto px-4 py-16">
         <div className="text-center mb-14">
           <h2 className="text-4xl font-black text-slate-900 tracking-tight mb-3">
-            All <span className="text-primary">Tools</span>
+            Featured <span className="text-primary">Tool Categories</span>
           </h2>
-          <p className="text-slate-400 text-lg">Click any tool to get started instantly — no account needed.</p>
+          <p className="text-slate-400 text-lg">Start with the workflow you need, then jump into the exact tool.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -216,7 +245,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-14">
             <h2 className="text-4xl font-black text-slate-900 tracking-tight mb-3">Built for Professionals</h2>
-            <p className="text-slate-400 text-lg">Designed for SEO experts, developers and content creators.</p>
+            <p className="text-slate-400 text-lg">Designed for SEO experts, developers, marketers, students, and creators.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {features.map((f, i) => (
@@ -248,7 +277,7 @@ export default function Home() {
               <div className="flex gap-1 mb-4">
                 {[1,2,3,4,5].map(j => <Star key={j} className="h-4 w-4 text-yellow-400 fill-yellow-400" />)}
               </div>
-              <p className="text-slate-600 text-sm leading-relaxed mb-6 italic">"{t.text}"</p>
+              <p className="text-slate-600 text-sm leading-relaxed mb-6 italic">&ldquo;{t.text}&rdquo;</p>
               <div>
                 <p className="font-black text-slate-900 text-sm">{t.name}</p>
                 <p className="text-slate-400 text-xs">{t.role}</p>
@@ -264,7 +293,7 @@ export default function Home() {
           <div className="text-center mb-16">
             <h2 className="text-4xl font-black text-slate-900 tracking-tight mb-4">Frequently Asked Questions</h2>
             <p className="text-slate-400 text-lg">
-              If you can’t find what you’re looking for, write us a message and we'll get back to you.
+              If you cannot find what you are looking for, write us a message and we will get back to you.
             </p>
           </div>
 
@@ -273,86 +302,86 @@ export default function Home() {
               <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
                 <h3 className="font-black text-slate-900 mb-3">What is UnifiedTools Pro?</h3>
                 <p className="text-slate-500 text-sm leading-relaxed">
-                  UnifiedTools Pro is an easy to use toolkit that allows you to extract, view and download images from any public website. Simply paste the URL and click "Extract" to start. After a few seconds, you'll see the images found on the website.
+                  UnifiedTools Pro is a browser-based collection of practical tools for SEO, AI writing, images, PDFs, calculators, developer tasks, QR codes, and website security checks. It is built for quick everyday work without switching between many separate sites.
                 </p>
               </div>
 
               <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
-                <h3 className="font-black text-slate-900 mb-3">How can I find specific images?</h3>
+                <h3 className="font-black text-slate-900 mb-3">Which SEO tools are included?</h3>
                 <p className="text-slate-500 text-sm leading-relaxed">
-                  You can view found images in a grid or list and explore them by sorting by name, type, dimensions, or file size. You can also search for images by their name or type/format, making it easy to find exactly what you need.
+                  The SEO section includes meta tag generation, keyword density analysis, SERP snippet preview, schema markup generation, Search Console query analysis, SEO audits, and image geotagging support for local SEO.
                 </p>
               </div>
 
               <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
-                <h3 className="font-black text-slate-900 mb-3">What other tools are available?</h3>
+                <h3 className="font-black text-slate-900 mb-3">What image tools are available?</h3>
                 <p className="text-slate-500 text-sm leading-relaxed">
-                  Beyond extraction, we offer Geo-Tagging for SEO, Image Conversion, PDF tools, and more. For images, you can switch backgrounds, copy URLs, and download images individually or in bulk via a ZIP archive.
+                  You can convert image formats, crop images, remove backgrounds with AI, generate color palettes from images, run reverse image search, and add GPS metadata to images for local search workflows.
                 </p>
               </div>
 
               <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
-                <h3 className="font-black text-slate-900 mb-3">Is it free?</h3>
+                <h3 className="font-black text-slate-900 mb-3">Do I need to install anything?</h3>
                 <p className="text-slate-500 text-sm leading-relaxed">
-                  Yes, UnifiedTools Pro is free to use without creating an account! We have daily limits to prevent abuse, but you can extend these limits by creating an account or subscribing to a premium plan.
+                  No. The tools run from your browser, so you can open a page, complete the task, and download the output. Some advanced workflows may use server APIs, but the experience stays simple.
                 </p>
               </div>
 
               <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
-                <h3 className="font-black text-slate-900 mb-3">How does it work?</h3>
+                <h3 className="font-black text-slate-900 mb-3">Can developers use it?</h3>
                 <p className="text-slate-500 text-sm leading-relaxed">
-                  Every time you start an extraction, we use a headless browser to open the website. We apply multiple methods to find all images (including SVGs). Then, the images are analyzed to show useful info like type, name, and size.
+                  Yes. Developer utilities include JSON formatting and validation, Base64 encoding and decoding, URL encoding, hash generation, color conversion, password generation, and other quick technical helpers.
                 </p>
               </div>
 
               <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
-                <h3 className="font-black text-slate-900 mb-3">Does it work with dynamic websites?</h3>
+                <h3 className="font-black text-slate-900 mb-3">Are there PDF tools?</h3>
                 <p className="text-slate-500 text-sm leading-relaxed">
-                  Yes! Every website is viewed just like you see it in your browser. We use the latest Google Chrome browser to process the sites, execute JavaScript, and wait for requests to finish before extracting.
+                  Yes. You can extract text from PDFs, merge multiple PDF files, and compress large PDF documents so they are easier to share, store, and publish online.
                 </p>
               </div>
             </div>
 
             <div className="space-y-8">
               <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
-                <h3 className="font-black text-slate-900 mb-3">Can I download multiple images at once?</h3>
+                <h3 className="font-black text-slate-900 mb-3">What AI tools can I use?</h3>
                 <p className="text-slate-500 text-sm leading-relaxed">
-                  Of course! Select the images you want and use the "Download Selected" button to get them all in a ZIP file. Note that some images might be protected and won't be included if they can't be fetched.
+                  UnifiedTools Pro includes AI-focused tools for grammar checking, paraphrasing, plagiarism review, AI content detection, background removal, reverse image search, and chatbot-style workflow support.
                 </p>
               </div>
 
               <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
-                <h3 className="font-black text-slate-900 mb-3">The extraction does not work. Why?</h3>
+                <h3 className="font-black text-slate-900 mb-3">What security checks are supported?</h3>
                 <p className="text-slate-500 text-sm leading-relaxed">
-                  The website might not be public, might be behind a login, or might be very slow. Sometimes high traffic can also cause performance issues. Try again later or try a different website if you encounter issues.
+                  You can inspect SSL certificate health, generate strong passwords, test password strength, create hashes, lookup IP information, and review website security basics from the security toolkit.
                 </p>
               </div>
 
               <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
-                <h3 className="font-black text-slate-900 mb-3">How many images are extracted?</h3>
+                <h3 className="font-black text-slate-900 mb-3">Can I use it for marketing work?</h3>
                 <p className="text-slate-500 text-sm leading-relaxed">
-                  Our server scrolls through the site for a few seconds to trigger lazy loading. Every image loaded in the first ~10 seconds is sent back to you. Tracking pixels and invalid images are automatically removed.
+                  Yes. Marketers can generate QR codes, preview search snippets, create meta tags, check keyword usage, prepare images, analyze content originality, and calculate percentages or campaign numbers.
                 </p>
               </div>
 
               <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
-                <h3 className="font-black text-slate-900 mb-3">Can I extract images from files?</h3>
+                <h3 className="font-black text-slate-900 mb-3">Are calculators included?</h3>
                 <p className="text-slate-500 text-sm leading-relaxed">
-                  Yes! You can drag and drop files into the dropzone. We support PDF, Office documents (Word, PPT), and ZIP archives. All search and filter features work with file extractions too.
+                  Yes. The calculator section includes age calculation, percentage calculation, and loan EMI calculation with useful breakdowns for daily and business use.
                 </p>
               </div>
 
               <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
-                <h3 className="font-black text-slate-900 mb-3">Can I extract from multiple sources?</h3>
+                <h3 className="font-black text-slate-900 mb-3">How do I find a tool quickly?</h3>
                 <p className="text-slate-500 text-sm leading-relaxed">
-                  Yes, you can paste a list of URLs or upload multiple files at once. All images will be collected and displayed together, making it easy to work with content from multiple sources simultaneously.
+                  Use the All Tools page to browse by category, or use the site search from the navigation bar to find tools by name or category. The dashboard keeps workflows easy to scan.
                 </p>
               </div>
 
               <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
-                <h3 className="font-black text-slate-900 mb-3">What does "Image preview not available" mean?</h3>
+                <h3 className="font-black text-slate-900 mb-3">Who is this website for?</h3>
                 <p className="text-slate-500 text-sm leading-relaxed">
-                  This usually means the webserver where the image is stored doesn't allow it to be displayed on other sites (CORS). You can often still download it or open it in a new tab to see it.
+                  It is useful for SEO professionals, developers, content creators, students, marketers, small business owners, and anyone who needs quick web utilities without extra setup.
                 </p>
               </div>
             </div>
@@ -369,14 +398,14 @@ export default function Home() {
           <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-blue-600/20 rounded-full blur-3xl" />
           <div className="relative z-10">
             <Sparkles className="h-10 w-10 text-yellow-400 mx-auto mb-6" />
-            <h2 className="text-5xl font-black text-white mb-4 tracking-tight">Ready to 10x Your SEO?</h2>
+            <h2 className="text-5xl font-black text-white mb-4 tracking-tight">Ready to Work Faster?</h2>
             <p className="text-slate-400 text-lg mb-10 max-w-xl mx-auto">
-              Start extracting and geo-tagging images from any website in seconds. Completely free.
+              Open the full toolkit and choose from SEO, AI writing, image, PDF, calculator, security, QR, and developer tools.
             </p>
-            <Link href="/tools/image-converter">
+            <Link href="/tools/all">
               <motion.button whileHover={{ scale: 1.05, boxShadow: "0 20px 60px -8px rgba(255,255,255,0.3)" }} whileTap={{ scale: 0.97 }}
                 className="bg-white text-slate-900 px-10 py-5 rounded-2xl font-black text-base flex items-center gap-3 mx-auto shadow-2xl transition-all">
-                <Globe className="h-6 w-6 text-primary" /> Start For Free <ArrowRight className="h-5 w-5" />
+                <Globe className="h-6 w-6 text-primary" /> Browse All Tools <ArrowRight className="h-5 w-5" />
               </motion.button>
             </Link>
           </div>

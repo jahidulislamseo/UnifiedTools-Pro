@@ -14,14 +14,14 @@ function formatDate(value: string | Date) {
   return new Date(value).toISOString().replace("T", " ").replace("Z", " UTC");
 }
 
-export async function GET(req: NextRequest) {
+export async function GET(req: NextRequest): Promise<NextResponse> {
   const url = req.nextUrl.searchParams.get("url") || "";
   const host = parseHost(url);
   if (!host) {
     return NextResponse.json({ error: true, reason: "Invalid URL or hostname." }, { status: 400 });
   }
 
-  return new Promise((resolve) => {
+  return new Promise<NextResponse>((resolve) => {
     const socket = tls.connect(
       {
         host,
@@ -70,8 +70,8 @@ export async function GET(req: NextRequest) {
               authorized: socket.authorized,
               authorizedOn: socket.authorized ? formatDate(new Date()) : null,
             },
-          }),
-          { status: 200 }
+          },
+          { status: 200 })
         );
         socket.end();
       }

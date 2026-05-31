@@ -152,6 +152,30 @@ const allTools = [
     category: "🛠️ Utility Tools",
     items: [
       {
+        title: "QR Code Generator",
+        description: "Generate custom QR codes for URLs, Wi-Fi, email, and text with full color and size control.",
+        icon: <QrCode className="h-8 w-8 text-teal-400" />,
+        path: "/tools/qr-code",
+        status: "live",
+        badge: "New",
+      },
+      {
+        title: "Color Palette Generator",
+        description: "Extract dominant colors from any image. Get HEX, RGB, and HSL values with a beautiful palette.",
+        icon: <Palette className="h-8 w-8 text-purple-500" />,
+        path: "/tools/color-palette",
+        status: "live",
+        badge: "New",
+      },
+      {
+        title: "AI Background Remover",
+        description: "Remove image backgrounds instantly with AI. 100% private — processed in your browser.",
+        icon: <Bot className="h-8 w-8 text-rose-400" />,
+        path: "/tools/background-remover",
+        status: "live",
+        badge: "AI",
+      },
+      {
         title: "QR Code Scanner",
         description: "Upload an image with a QR code to instantly decode its content.",
         icon: <QrCode className="h-8 w-8 text-teal-400" />,

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import ToolSeoContent from "@/components/ToolSeoContent";
-import { Copy, Check, Tag, Globe, Twitter, Share2 } from "lucide-react";
+import { Copy, Check, Tag, Globe, Share2 } from "lucide-react";
 
 function CopyBtn({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);

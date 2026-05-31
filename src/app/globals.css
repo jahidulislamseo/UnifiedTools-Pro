@@ -11,28 +11,64 @@
 
 @layer base {
   body {
-    background-color: #FFFFFF !important;
-    color: #0f172a !important;
+    background-color: var(--bg) !important;
+    color: var(--fg) !important;
     font-family: Arial, Helvetica, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     min-height: 100vh;
     overflow-x: hidden;
+    transition: background-color 0.2s, color 0.2s;
+  }
+
+  :root {
+    --bg: #ffffff;
+    --fg: #0f172a;
+    --card: #ffffff;
+    --card-border: #e2e8f0;
+    --muted: #f8fafc;
+    --muted-fg: #64748b;
+  }
+
+  .dark {
+    --bg: #0a0f1e;
+    --fg: #e2e8f0;
+    --card: #111827;
+    --card-border: #1e2a3a;
+    --muted: #1e293b;
+    --muted-fg: #94a3b8;
+  }
+
+  /* Dark mode: white backgrounds → dark cards */
+  .dark .bg-white { background-color: var(--card) !important; }
+  .dark .border-slate-100 { border-color: var(--card-border) !important; }
+  .dark .border-slate-200 { border-color: #1e2a3a !important; }
+  .dark .bg-slate-50 { background-color: #1a2234 !important; }
+  .dark .bg-slate-100 { background-color: #1e293b !important; }
+  .dark .text-slate-900 { color: #e2e8f0 !important; }
+  .dark .text-slate-800 { color: #cbd5e1 !important; }
+  .dark .text-slate-700 { color: #94a3b8 !important; }
+  .dark .text-slate-600 { color: #64748b !important; }
+  .dark .text-slate-400 { color: #475569 !important; }
+  .dark .shadow-sm { box-shadow: 0 1px 3px rgba(0,0,0,0.4) !important; }
+  .dark .shadow-xl { box-shadow: 0 8px 32px rgba(0,0,0,0.5) !important; }
+  .dark input, .dark textarea, .dark select {
+    background-color: #1a2234 !important;
+    color: #e2e8f0 !important;
+    border-color: #1e2a3a !important;
   }
 }
 
 .glass-panel {
-  background: white !important;
-  border: 1px solid #e2e8f0 !important;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1) !important;
+  background: var(--card) !important;
+  border: 1px solid var(--card-border) !important;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1) !important;
 }
 
 .aurora-bg {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: -1;
-    background: #FFFFFF !important;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  z-index: -1;
+  background: var(--bg) !important;
 }

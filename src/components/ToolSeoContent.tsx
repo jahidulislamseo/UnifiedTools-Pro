@@ -997,6 +997,8 @@ const toolContents: Record<string, ToolContent> = {
   },
 };
 
+import ToolRating from "./ToolRating";
+
 interface Props {
   tool: string;
 }
@@ -1006,10 +1008,16 @@ export default function ToolSeoContent({ tool }: Props) {
   if (!content) return null;
 
   return (
-    <div className="mt-16 bg-slate-50 rounded-3xl border border-slate-100 p-10 shadow-sm">
+    <div className="mt-16 bg-slate-50 dark:bg-slate-900/40 rounded-3xl border border-slate-100 dark:border-slate-800 p-10 shadow-sm transition-colors">
       <div className="max-w-4xl mx-auto space-y-6">
-        <h2 className="text-3xl font-black text-slate-900">{content.title}</h2>
-        <p className="text-slate-600 leading-8">{content.introduction}</p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/60 dark:border-slate-800 pb-6">
+          <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{content.title}</h2>
+          <div className="flex-shrink-0 bg-white dark:bg-slate-800 px-4 py-2.5 rounded-2xl border border-slate-200/50 dark:border-slate-700 shadow-sm">
+            <ToolRating />
+          </div>
+        </div>
+        <p className="text-slate-600 dark:text-slate-350 leading-8">{content.introduction}</p>
+
         {content.sections.map((section) => (
           <div key={section.heading}>
             <h3 className="text-2xl font-bold text-slate-900 mb-3">{section.heading}</h3>

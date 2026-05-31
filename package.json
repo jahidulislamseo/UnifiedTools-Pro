@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
+    "@imgly/background-removal": "^1.7.0",
     "@sparticuz/chromium-min": "^148.0.0",
     "cheerio": "^1.2.0",
     "clsx": "^2.1.1",
@@ -25,6 +26,7 @@
     "pdf-parse": "^2.4.5",
     "piexifjs": "^1.0.6",
     "puppeteer-core": "^24.43.0",
+    "qrcode": "^1.5.4",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-dropzone": "^15.0.0",
@@ -39,6 +41,7 @@
     "@types/leaflet": "^1.9.21",
     "@types/node": "^20",
     "@types/pdf-parse": "^1.1.5",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",

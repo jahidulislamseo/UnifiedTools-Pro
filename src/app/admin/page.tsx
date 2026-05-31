@@ -123,9 +123,16 @@ export default async function AdminPage({
           .toArray(),
       ]);
 
+    const [registeredUsers, activeSessions] = await Promise.all([
+      db.collection('users').countDocuments({}),
+      db.collection('sessions').countDocuments({ expiresAt: { $gt: new Date() } }),
+    ]);
+
     const stats = {
       totalEvents,
       uniqueUsers: allSessions.length,
+      registeredUsers,
+      activeSessions,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       byTool: byTool.map((t: any) => ({ ...t, _id: String(t._id), lastUsed: t.lastUsed?.toISOString?.() || '' })),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

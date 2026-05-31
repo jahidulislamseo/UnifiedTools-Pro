@@ -95,6 +95,22 @@ export default function Navbar() {
   };
 
   const initials = user?.name?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
+  const [recentTools, setRecentTools] = useState<{ toolPath: string; toolName: string }[]>([]);
+
+  useEffect(() => {
+    if (user) {
+      fetch("/api/analytics/my-usage")
+        .then(r => r.json())
+        .then(d => {
+          const seen = new Set<string>();
+          const unique = (d.usage || []).filter((u: any) => {
+            if (seen.has(u.toolPath)) return false;
+            seen.add(u.toolPath); return true;
+          }).slice(0, 5);
+          setRecentTools(unique);
+        }).catch(() => {});
+    }
+  }, [user]);
 
   return (
     <>
@@ -165,6 +181,20 @@ export default function Navbar() {
                           className="w-full flex items-center gap-2 px-4 py-2.5 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
                           <User className="h-4 w-4 text-primary" /> My Dashboard
                         </Link>
+                        {recentTools.length > 0 && (
+                          <div className="border-t border-slate-50 dark:border-slate-700 pt-1">
+                            <p className="px-4 py-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                              <Clock className="h-3 w-3" /> Recently Used
+                            </p>
+                            {recentTools.map(t => (
+                              <Link key={t.toolPath} href={t.toolPath} onClick={() => setUserMenuOpen(false)}
+                                className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-primary transition-colors truncate">
+                                <div className="h-1.5 w-1.5 rounded-full bg-primary/60 flex-shrink-0" />
+                                {t.toolName}
+                              </Link>
+                            ))}
+                          </div>
+                        )}
                         {/* Recently Used */}
                         {recent.length > 0 && (
                           <div className="border-t border-slate-50 dark:border-slate-700 pt-1">

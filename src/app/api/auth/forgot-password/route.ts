@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/mongodb';
-import crypto from 'crypto';
+import { generateToken } from '@/lib/userStore';
 
 export async function POST(req: NextRequest) {
   try {
@@ -9,30 +9,22 @@ export async function POST(req: NextRequest) {
 
     const db = await getDb();
     const user = await db.collection('users').findOne({ email: email.toLowerCase().trim() });
-
     // Always return success to prevent email enumeration
     if (!user) return NextResponse.json({ success: true });
 
-    const token = crypto.randomBytes(32).toString('hex');
+    const token = generateToken();
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
-
     await db.collection('passwordResets').insertOne({
-      email: user.email,
-      token,
-      expiresAt,
-      used: false,
-      createdAt: new Date(),
+      email: user.email, token, expiresAt, used: false, createdAt: new Date(),
     });
 
-    // Log to console since we have no SMTP configured
-    const resetLink = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/reset-password?token=${token}`;
-    console.log('\n🔑 PASSWORD RESET LINK (no SMTP configured — dev only):');
-    console.log(`   Email: ${user.email}`);
-    console.log(`   Link:  ${resetLink}`);
-    console.log(`   Expires: ${expiresAt.toISOString()}\n`);
+    // In production: send email with reset link
+    // For now: store token and return it in dev mode
+    const resetUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/reset-password?token=${token}`;
+    console.log(`[Password Reset] ${user.email} → ${resetUrl}`);
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, ...(process.env.NODE_ENV === 'development' ? { resetUrl } : {}) });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message || 'Server error' }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

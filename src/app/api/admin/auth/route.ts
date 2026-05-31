@@ -1,12 +1,22 @@
 import { NextRequest } from 'next/server';
 import { cookies } from 'next/headers';
+import { getDb } from '@/lib/mongodb';
 
 export const runtime = 'nodejs';
 
 export async function POST(req: NextRequest) {
   const { password } = await req.json();
+  const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
+  const userAgent = req.headers.get('user-agent') || '';
+  const success = !!password && password === process.env.ADMIN_PASSWORD;
 
-  if (!password || password !== process.env.ADMIN_PASSWORD) {
+  // Log every login attempt
+  try {
+    const db = await getDb();
+    await db.collection('admin_login_log').insertOne({ success, ip, userAgent, timestamp: new Date() });
+  } catch { /* ignore logging errors */ }
+
+  if (!success) {
     return Response.json({ error: 'Invalid password' }, { status: 401 });
   }
 

@@ -4,6 +4,12 @@ import { ObjectId } from 'mongodb';
 
 export async function GET(req: NextRequest) {
   try {
+    // Admin bypass — no limits for admin
+    const adminToken = req.cookies.get('admin_token')?.value;
+    if (adminToken && adminToken === process.env.ADMIN_PASSWORD) {
+      return NextResponse.json({ user: { name: 'Admin', email: 'admin', isAdmin: true } });
+    }
+
     const token = req.cookies.get('auth_token')?.value;
     if (!token) return NextResponse.json({ user: null });
 

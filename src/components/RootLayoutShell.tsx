@@ -1,8 +1,8 @@
 'use client';
 import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
-import { X } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, Wrench } from 'lucide-react';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import AnnouncementBanner from './AnnouncementBanner';
@@ -49,11 +49,58 @@ function ChatBubbleMark() {
   );
 }
 
+function MaintenancePage() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-indigo-950 px-4">
+      <div className="text-center max-w-md">
+        <div className="mx-auto mb-6 h-20 w-20 rounded-3xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center">
+          <Wrench className="h-10 w-10 text-indigo-400" />
+        </div>
+        <h1 className="text-3xl font-black text-white mb-3">Under Maintenance</h1>
+        <p className="text-slate-400 text-sm leading-relaxed mb-6">
+          We&apos;re currently performing scheduled maintenance to improve your experience.
+          We&apos;ll be back online shortly. Thank you for your patience!
+        </p>
+        <div className="inline-flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/20 rounded-2xl px-4 py-2">
+          <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
+          <span className="text-indigo-300 text-sm font-bold">Maintenance in progress…</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function RootLayoutShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAdmin = pathname.startsWith('/admin');
   const isDashboard = pathname.startsWith('/dashboard');
   const [chatOpen, setChatOpen] = useState(false);
+  const [maintenance, setMaintenance] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    if (isAdmin || isDashboard) return;
+    // Check sessionStorage cache (30s TTL)
+    try {
+      const cached = sessionStorage.getItem('maint_v');
+      const cachedAt = Number(sessionStorage.getItem('maint_at') || 0);
+      if (cached !== null && Date.now() - cachedAt < 30000) {
+        setMaintenance(cached === '1');
+        return;
+      }
+    } catch { /* ignore */ }
+
+    fetch('/api/admin/maintenance')
+      .then(r => r.json())
+      .then(d => {
+        const on = d.enabled === true;
+        setMaintenance(on);
+        try {
+          sessionStorage.setItem('maint_v', on ? '1' : '0');
+          sessionStorage.setItem('maint_at', String(Date.now()));
+        } catch { /* ignore */ }
+      })
+      .catch(() => setMaintenance(false));
+  }, [isAdmin, isDashboard]);
 
   if (isAdmin) {
     return <div className="min-h-screen bg-gray-950 text-gray-100">{children}</div>;
@@ -61,6 +108,11 @@ export default function RootLayoutShell({ children }: { children: React.ReactNod
 
   if (isDashboard) {
     return <>{children}</>;
+  }
+
+  // Show maintenance page for non-admin users
+  if (maintenance === true) {
+    return <MaintenancePage />;
   }
 
   return (

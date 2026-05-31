@@ -32,28 +32,32 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// PATCH - ban or unban a user
+// PATCH - ban or unban (single or bulk)
 export async function PATCH(req: NextRequest) {
   if (!(await isAdmin())) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   try {
-    const { userId, action } = await req.json();
-    if (!userId || !['ban', 'unban'].includes(action))
+    const body = await req.json();
+    const action: string = body.action;
+    if (!['ban', 'unban'].includes(action))
       return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
+
+    // Bulk: userIds array
+    const userIds: string[] = body.userIds || (body.userId ? [body.userId] : []);
+    if (userIds.length === 0) return NextResponse.json({ error: 'No users specified' }, { status: 400 });
 
     const db = await getDb();
     const isBanned = action === 'ban';
-    await db.collection('users').updateOne(
-      { _id: new ObjectId(userId) },
+
+    await db.collection('users').updateMany(
+      { _id: { $in: userIds.map(id => new ObjectId(id)) } },
       { $set: { isBanned } }
     );
 
-    // If banning: delete all active sessions so they're logged out immediately
     if (isBanned) {
-      const user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
-      if (user) await db.collection('sessions').deleteMany({ userId: String(user._id) });
+      await db.collection('sessions').deleteMany({ userId: { $in: userIds } });
     }
 
-    return NextResponse.json({ success: true, isBanned });
+    return NextResponse.json({ success: true, isBanned, count: userIds.length });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Server error' }, { status: 500 });
   }

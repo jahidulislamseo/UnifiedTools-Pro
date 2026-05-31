@@ -128,11 +128,16 @@ export default async function AdminPage({
       db.collection('sessions').countDocuments({ expiresAt: { $gt: new Date() } }),
     ]);
 
+    const conversionRate = allSessions.length > 0
+      ? Math.round((registeredUsers / allSessions.length) * 100)
+      : 0;
+
     const stats = {
       totalEvents,
       uniqueUsers: allSessions.length,
       registeredUsers,
       activeSessions,
+      conversionRate,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       byTool: byTool.map((t: any) => ({ ...t, _id: String(t._id), lastUsed: t.lastUsed?.toISOString?.() || '' })),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

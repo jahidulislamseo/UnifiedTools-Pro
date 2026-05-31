@@ -315,6 +315,13 @@ const allTools = [
         path: "/tools/seo/seo-audit",
         status: "live",
       },
+      {
+        title: "Word Counter & Readability",
+        description: "Count words, characters, and sentences. Get Flesch readability score and reading time.",
+        icon: <FileText className="h-8 w-8 text-indigo-500" />,
+        path: "/tools/seo/word-counter",
+        status: "live",
+      },
     ],
   },
 ];

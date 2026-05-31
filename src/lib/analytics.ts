@@ -27,6 +27,13 @@ export const TOOL_INFO: Record<string, { name: string; category: string }> = {
   '/tools/password': { name: 'Password Tools', category: 'Utility' },
   '/tools/url': { name: 'URL Tools', category: 'Utility' },
   '/tools/all': { name: 'All Tools', category: 'Navigation' },
+  '/tools/seo/meta-tag-generator': { name: 'Meta Tag Generator', category: 'SEO' },
+  '/tools/seo/serp-preview': { name: 'SERP Snippet Preview', category: 'SEO' },
+  '/tools/seo/schema-generator': { name: 'Schema Markup Generator', category: 'SEO' },
+  '/tools/seo/keyword-density': { name: 'Keyword Density Checker', category: 'SEO' },
+  '/tools/seo/word-counter': { name: 'Word Counter & Readability', category: 'SEO' },
+  '/tools/seo/seo-audit': { name: 'SEO Audit Checker', category: 'SEO' },
+  '/tools/seo/ssl-checker': { name: 'SSL Certificate Checker', category: 'SEO' },
 };
 
 export const COUNTRY_NAMES: Record<string, string> = {
@@ -81,5 +88,6 @@ export const CATEGORY_COLORS: Record<string, string> = {
   'Developer': 'bg-blue-100 text-blue-700',
   'Utility': 'bg-yellow-100 text-yellow-700',
   'AI Tools': 'bg-pink-100 text-pink-700',
+  'SEO': 'bg-orange-100 text-orange-700',
   'Navigation': 'bg-gray-100 text-gray-600',
 };
